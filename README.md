@@ -1,1 +1,1 @@
-# Shepherd - A fault tolerance framework for elastic stream processing systems
+# Pathfinder - A fault tolerance framework for elastic stream processing systems
