@@ -1,7 +1,7 @@
 package net.knasmueller.pathfinder.controller;
 
 
-import net.knasmueller.pathfinder.entities.VispRuntime;
+import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,19 +27,19 @@ public class VispCommunicationController {
 
     @RequestMapping("/addVispRuntime")
     public String addVispRuntime(@RequestParam(value = "endpoint") String endpoint) {
-        vispCommunicator.addVispRuntime(new VispRuntime(endpoint));
+        vispCommunicator.addVispRuntime(new VispRuntimeIdentifier(endpoint));
         return "ok";
     }
 
     @RequestMapping("/removeVispRuntime")
     public String removeVispRuntime(@RequestParam(value = "endpoint") String endpoint) {
-        vispCommunicator.removeVispRuntime(new VispRuntime(endpoint));
+        vispCommunicator.removeVispRuntime(new VispRuntimeIdentifier(endpoint));
         return "ok";
     }
 
     @RequestMapping("/getVispRuntimes")
     @ResponseBody
-    public List<VispRuntime> getVispRuntimes() {
-        return vispCommunicator.getVispRuntimes();
+    public List<VispRuntimeIdentifier> getVispRuntimes() {
+        return vispCommunicator.getVispRuntimeIdentifiers();
     }
 }

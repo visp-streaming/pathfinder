@@ -1,16 +1,16 @@
 package net.knasmueller.pathfinder.entities;
 
 
-public class VispRuntime {
+public class VispRuntimeIdentifier {
     String ip;
     int port;
 
-    public VispRuntime(String ip, int port) {
+    public VispRuntimeIdentifier(String ip, int port) {
         this.ip = ip;
         this.port = port;
     }
 
-    public VispRuntime(String endpoint) {
+    public VispRuntimeIdentifier(String endpoint) {
         String[] splitted = endpoint.split(":");
         this.ip = splitted[0];
         this.port = Integer.parseInt(splitted[1]);
@@ -26,7 +26,7 @@ public class VispRuntime {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        VispRuntime that = (VispRuntime) o;
+        VispRuntimeIdentifier that = (VispRuntimeIdentifier) o;
 
         if (port != that.port) return false;
         return ip.equals(that.ip);

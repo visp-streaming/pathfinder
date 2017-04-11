@@ -38,4 +38,12 @@ public class CommunicationController {
     public List<String> getSiblings() {
         return communicator.getSiblings();
     }
+
+    @RequestMapping("/propagateOperatorStatus")
+    @ResponseBody
+    public String propagateOperatorStatus(@RequestParam(value="operatorId") String operatorId, @RequestParam(value="status") String status) {
+        // this method automatically notifies all pathfinder instances about a change in some operator's status
+        communicator.propagateOperatorStatus(operatorId, status);
+        return "ok";
+    }
 }
