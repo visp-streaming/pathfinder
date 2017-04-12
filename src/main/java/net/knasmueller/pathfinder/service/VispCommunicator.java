@@ -29,6 +29,8 @@ public class VispCommunicator {
     @Autowired
     VispTopology vispTopology;
 
+    public String cachedTopologyString = "";
+
     TopologyParser topologyParser = new TopologyParser();
 
     public synchronized void addVispRuntime(VispRuntimeIdentifier endpoint) {
@@ -36,7 +38,11 @@ public class VispCommunicator {
             LOG.error("Invalid endpoint");
         } else {
             vispRuntimeIdentifiers.add(endpoint);
-            getTopology(endpoint);
+            String topology = getTopology(endpoint);
+            if(!this.cachedTopologyString.equals(topology)) {
+                this.cachedTopologyString = topology;
+                updateStoredTopology(topology);
+            }
             LOG.debug("Added endpoint " + endpoint);
         }
     }
@@ -65,8 +71,11 @@ public class VispCommunicator {
         String topology = restTemplate.getForObject(targetUrl, String.class);
         LOG.debug("Topology equals to: ");
         LOG.debug(topology);
-        vispTopology.setTopology(topologyParser.parseTopologyFromString(topology).topology);
-
         return topology;
+    }
+
+    public void updateStoredTopology(String newTopology) {
+        LOG.debug("UPDATING stored VISP topology");
+        vispTopology.setTopology(topologyParser.parseTopologyFromString(newTopology).topology);
     }
 }

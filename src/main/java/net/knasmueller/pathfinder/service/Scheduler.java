@@ -28,4 +28,21 @@ public class Scheduler {
         }
     }
 
+    @Scheduled(fixedRate = 60000)
+    public void checkForTopologyUpdate() {
+        if(vispCommunicator.getVispRuntimeIdentifiers().size() < 1) {
+            LOG.debug("No known VISP instances - could not grab topology");
+            return;
+        }
+        LOG.debug("checkForTopologyUpdate()");
+        String topology = vispCommunicator.getTopology(vispCommunicator.getVispRuntimeIdentifiers().get(0));
+        if(!vispCommunicator.cachedTopologyString.equals(topology)) {
+            LOG.debug("Updating topology");
+            vispCommunicator.cachedTopologyString = topology;
+            vispCommunicator.updateStoredTopology(topology);
+        } else {
+            LOG.debug("No topology update necessary");
+        }
+    }
+
 }
