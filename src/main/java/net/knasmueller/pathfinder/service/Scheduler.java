@@ -1,6 +1,7 @@
 package net.knasmueller.pathfinder.service;
 
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
+import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,8 @@ public class Scheduler {
         if (currentlyKnownVispRuntimeIdentifiers.size() != 0) {
             for (VispRuntimeIdentifier rt : currentlyKnownVispRuntimeIdentifiers) {
                 LOG.info("Querying VISP runtime " + rt);
-                vispCommunicator.getStatisticsFromVisp(rt);
+                OperatorStatisticsResponse response = vispCommunicator.getStatisticsFromVisp(rt);
+                vispCommunicator.persistStatisticEntries(response);
             }
         } else {
             LOG.debug("No VISP instances to query");

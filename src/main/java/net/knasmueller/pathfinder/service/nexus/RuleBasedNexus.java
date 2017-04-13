@@ -2,7 +2,9 @@ package net.knasmueller.pathfinder.service.nexus;
 
 
 import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
+import org.springframework.stereotype.Service;
 
+@Service
 public class RuleBasedNexus implements INexus {
     @Override
     public OperatorClassification predict(SingleOperatorStatistics s) {

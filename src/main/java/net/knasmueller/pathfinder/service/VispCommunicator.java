@@ -93,7 +93,7 @@ public class VispCommunicator {
         // TODO: actually react to the changed topology
     }
 
-    public void getStatisticsFromVisp(VispRuntimeIdentifier rt) {
+    public OperatorStatisticsResponse getStatisticsFromVisp(VispRuntimeIdentifier rt) {
         RestTemplate restTemplate = new RestTemplate();
         URI targetUrl = UriComponentsBuilder.fromUriString("http://" + rt)
                 .path("/getAllStatistics")
@@ -104,7 +104,7 @@ public class VispCommunicator {
         LOG.debug("For step1:");
         LOG.debug(allStatistics.get("step1").toString());
 
-        persistStatisticEntries(allStatistics);
+        return allStatistics;
     }
 
     public void persistStatisticEntries(Map<String, SingleOperatorStatistics> allStatistics) {
