@@ -4,6 +4,7 @@ package net.knasmueller.pathfinder.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -21,7 +22,6 @@ public class Communicator {
 
     @Value("#{'${server.port:9000}'}")
     private String pathfinderRuntimePort;
-
 
 
     List<String> siblingPathfinders = new ArrayList<>();
@@ -50,21 +50,24 @@ public class Communicator {
 
 
     public void propagateOperatorStatus(String operatorId, String status) {
-        RestTemplate restTemplate = new RestTemplate();
         for(String pathfinder : siblingPathfinders) {
             if(pathfinder.equals(pathfinderRuntimeIp + ":" + pathfinderRuntimePort)) {
                 LOG.debug("Skipping own pathfinder instance " + pathfinder);
                 continue;
             }
-            URI targetUrl= UriComponentsBuilder.fromUriString("http://" + pathfinder)
-                    .path("/operator/setOperatorStatus")
-                    .queryParam("operatorId", operatorId)
-                    .queryParam("status", status)
-                    .build()
-                    .toUri();
-            LOG.debug("targetUrl: " + targetUrl);
-            restTemplate.getForObject(targetUrl, String.class);
+            sendOperatorStatusUpdateToSibling(operatorId, status, pathfinder);
         }
+    }
 
+    public void sendOperatorStatusUpdateToSibling(String operatorId, String status, String pathfinderInstance) {
+        RestTemplate restTemplate = new RestTemplate();
+        URI targetUrl= UriComponentsBuilder.fromUriString("http://" + pathfinderInstance)
+                .path("/operator/setOperatorStatus")
+                .queryParam("operatorId", operatorId)
+                .queryParam("status", status)
+                .build()
+                .toUri();
+        LOG.debug("targetUrl: " + targetUrl);
+        restTemplate.getForObject(targetUrl, String.class);
     }
 }
