@@ -73,7 +73,7 @@ public class VispCommunicator {
     public String getTopologyFromVisp(VispRuntimeIdentifier rt) {
         RestTemplate restTemplate = new RestTemplate();
         URI targetUrl = UriComponentsBuilder.fromUriString("http://" + rt)
-                .path("/getTopologyFromVisp")
+                .path("/getTopology")
                 .build()
                 .toUri();
         String topology = restTemplate.getForObject(targetUrl, String.class);
