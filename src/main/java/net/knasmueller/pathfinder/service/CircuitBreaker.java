@@ -1,5 +1,6 @@
 package net.knasmueller.pathfinder.service;
 
+import net.knasmueller.pathfinder.exceptions.InvalidCircuitBreakerTransition;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,8 +17,13 @@ public class CircuitBreaker {
         this.state = State.OPEN;
     }
 
-    public void halfOpen() {
-        this.state = State.HALF_OPEN;
+    public void halfOpen() throws InvalidCircuitBreakerTransition {
+        if(this.state.equals(State.OPEN)) {
+            this.state = State.HALF_OPEN;
+        }
+        if(this.state.equals(State.CLOSED)) {
+            throw new InvalidCircuitBreakerTransition("Transition to state HALF_OPEN only valid from state OPEN");
+        }
     }
 
     public void close() {

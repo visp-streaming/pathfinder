@@ -30,7 +30,11 @@ public class Communicator {
         if (endpoint == null || "".equals(endpoint)) {
             LOG.error("Invalid endpoint");
         } else {
-            siblingPathfinders.add(endpoint);
+            if(!siblingPathfinders.contains(endpoint)) {
+                siblingPathfinders.add(endpoint);
+            } else {
+                LOG.warn("Endpoint " + endpoint + " is already known and will not be added again");
+            }
             LOG.debug("Added endpoint " + endpoint);
         }
     }

@@ -1,5 +1,6 @@
 package net.knasmueller.pathfinder.controller;
 
+import net.knasmueller.pathfinder.exceptions.InvalidCircuitBreakerTransition;
 import net.knasmueller.pathfinder.service.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class CircuitBreakerController {
     }
 
     @RequestMapping("/halfOpen")
-    public String halfOpen() {
+    public String halfOpen() throws InvalidCircuitBreakerTransition {
         LOG.debug("Half-opening circuit breaker");
         circuitBreaker.halfOpen();
         return "";
