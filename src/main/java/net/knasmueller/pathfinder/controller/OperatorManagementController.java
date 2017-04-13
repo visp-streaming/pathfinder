@@ -1,19 +1,15 @@
 package net.knasmueller.pathfinder.controller;
 
 
-import net.knasmueller.pathfinder.entities.Operator;
-import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
+import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.service.OperatorManagement;
-import net.knasmueller.pathfinder.service.VispCommunicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
@@ -32,7 +28,7 @@ public class OperatorManagementController {
     }
 
     @RequestMapping("/getOperators")
-    public ConcurrentHashMap<String, Operator> getOperators() {
+    public ConcurrentHashMap<String, PathfinderOperator> getOperators() {
         return operatorManagement.getOperators();
     }
 }

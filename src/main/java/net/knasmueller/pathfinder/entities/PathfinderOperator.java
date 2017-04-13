@@ -1,18 +1,19 @@
 package net.knasmueller.pathfinder.entities;
 
 
-public class Operator {
+import ac.at.tuwien.infosys.visp.common.operators.Operator;
+
+public class PathfinderOperator extends Operator {
     public enum Status {WORKING, FAILED}
 
-    String name;
     Status status;
 
-    public Operator() {
+    public PathfinderOperator() {
         this.name = "";
         this.status = Status.WORKING;
     }
 
-    public Operator(String name) {
+    public PathfinderOperator(String name) {
         this.name = name;
         this.status = Status.WORKING;
     }
