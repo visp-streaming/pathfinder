@@ -17,19 +17,21 @@ public class Scheduler {
 
     @Scheduled(fixedRate = 30000)
     public void queryVispRuntimes() {
+        checkForTopologyUpdate();
+
         List<VispRuntimeIdentifier> currentlyKnownVispRuntimeIdentifiers = vispCommunicator.getVispRuntimeIdentifiers();
         LOG.info("Size: " + currentlyKnownVispRuntimeIdentifiers.size());
         if (currentlyKnownVispRuntimeIdentifiers.size() != 0) {
             for (VispRuntimeIdentifier rt : currentlyKnownVispRuntimeIdentifiers) {
                 LOG.info("Querying VISP runtime " + rt);
+                vispCommunicator.getStatisticsFromVisp(rt);
             }
         } else {
             LOG.debug("No VISP instances to query");
         }
     }
 
-    @Scheduled(fixedRate = 60000)
-    public void checkForTopologyUpdate() {
+    private void checkForTopologyUpdate() {
         if(vispCommunicator.getVispRuntimeIdentifiers().size() < 1) {
             LOG.debug("No known VISP instances - could not grab topology");
             return;

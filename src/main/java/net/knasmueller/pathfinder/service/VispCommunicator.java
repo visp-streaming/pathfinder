@@ -67,15 +67,25 @@ public class VispCommunicator {
                 .path("/getTopology")
                 .build()
                 .toUri();
-        LOG.debug("targetUrl for getTopology call: " + targetUrl);
         String topology = restTemplate.getForObject(targetUrl, String.class);
-        LOG.debug("Topology equals to: ");
-        LOG.debug(topology);
         return topology;
     }
 
     public void updateStoredTopology(String newTopology) {
         LOG.debug("UPDATING stored VISP topology");
         vispTopology.setTopology(topologyParser.parseTopologyFromString(newTopology).topology);
+
+        // TODO: actually react to the changed topology
+    }
+
+    public void getStatisticsFromVisp(VispRuntimeIdentifier rt) {
+        RestTemplate restTemplate = new RestTemplate();
+        URI targetUrl = UriComponentsBuilder.fromUriString("http://" + rt)
+                .path("/getAllStatistics")
+                .build()
+                .toUri();
+        String allStatistics = restTemplate.getForObject(targetUrl, String.class);
+        LOG.debug("All statistics: ");
+        LOG.debug(allStatistics);
     }
 }
