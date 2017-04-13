@@ -191,4 +191,27 @@ public class SingleOperatorStatistics {
                 ", killed_process=" + killed_process +
                 '}';
     }
+
+    public static SingleOperatorStatistics fromDefault() {
+        SingleOperatorStatistics s = new SingleOperatorStatistics();
+        s.setCpu_now(0.5);
+        s.setCpu_10(0.5);
+        s.setCpu_20(0.5);
+        s.setRam_now(0.5);
+        s.setRam_10(0.5);
+        s.setRam_20(0.5);
+        s.setNetwork_in(200);
+        s.setNetwork_out(200);
+        s.setRound_trip(50);
+        s.setRate_source_consumption_now(4.0);
+        s.setRate_source_consumption_10(4.0);
+        s.setRate_source_consumption_20(4.0);
+        s.setRate_sent_now(5.0);
+        s.setRate_sent_10(5.0);
+        s.setRate_sent_20(5.0);
+        s.setKilled_process(false);
+        s.setSum_source_messages(0);
+        s.setSum_outgoing_messages(0);
+        return s;
+    }
 }
