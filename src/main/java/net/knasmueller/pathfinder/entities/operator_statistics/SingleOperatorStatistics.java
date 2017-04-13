@@ -1,6 +1,9 @@
 package net.knasmueller.pathfinder.entities.operator_statistics;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SingleOperatorStatistics {
 
     double cpu_now, cpu_10, cpu_20, ram_now, ram_10, ram_20, network_in, network_out, round_trip, rate_source_consumption_now,

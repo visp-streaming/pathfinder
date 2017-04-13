@@ -3,6 +3,7 @@ package net.knasmueller.pathfinder.service;
 import ac.at.tuwien.infosys.visp.topologyParser.TopologyParser;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
+import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class contains all VISP-specific communication
@@ -93,8 +95,9 @@ public class VispCommunicator {
                 .path("/getAllStatistics")
                 .build()
                 .toUri();
-        OperatorStatisticsResponse allStatistics = restTemplate.getForObject(targetUrl, OperatorStatisticsResponse.class);
-        LOG.debug("All statistics: ");
-        LOG.debug(allStatistics.toString());
+        OperatorStatisticsResponse allStatistics;
+        allStatistics = restTemplate.getForObject(targetUrl, OperatorStatisticsResponse.class);
+        LOG.debug("For step1:");
+        LOG.debug(allStatistics.get("step1").toString());
     }
 }

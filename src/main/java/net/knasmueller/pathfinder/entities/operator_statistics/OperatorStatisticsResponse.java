@@ -1,27 +1,17 @@
 package net.knasmueller.pathfinder.entities.operator_statistics;
 
 
-import java.util.Arrays;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-public class OperatorStatisticsResponse {
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class OperatorStatisticsResponse extends LinkedHashMap<String, SingleOperatorStatistics> {
     /**
      * Wrapper for the response from the DSPE
      */
 
-    SingleOperatorStatistics[] singleOperatorStatistics;
 
-    public SingleOperatorStatistics[] getSingleOperatorStatistics() {
-        return singleOperatorStatistics;
-    }
-
-    public void setSingleOperatorStatistics(SingleOperatorStatistics[] singleOperatorStatistics) {
-        this.singleOperatorStatistics = singleOperatorStatistics;
-    }
-
-    @Override
-    public String toString() {
-        return "OperatorStatisticsResponse{" +
-                "singleOperatorStatistics=" + Arrays.toString(singleOperatorStatistics) +
-                '}';
-    }
 }
