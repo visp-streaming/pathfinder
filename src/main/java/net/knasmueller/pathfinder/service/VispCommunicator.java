@@ -9,10 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,19 +27,31 @@ public class VispCommunicator {
 
     public String cachedTopologyString = "";
 
+    public String getCachedTopologyString() {
+        return cachedTopologyString;
+    }
+
+    public void setCachedTopologyString(String cachedTopologyString) {
+        this.cachedTopologyString = cachedTopologyString;
+    }
+
     TopologyParser topologyParser = new TopologyParser();
+
+    public VispTopology getVispTopology() {
+        return vispTopology;
+    }
 
     public synchronized void addVispRuntime(VispRuntimeIdentifier endpoint) {
         if (endpoint == null || "".equals(endpoint)) {
             LOG.error("Invalid endpoint");
         } else {
             vispRuntimeIdentifiers.add(endpoint);
-            String topology = getTopology(endpoint);
-            if(!this.cachedTopologyString.equals(topology)) {
-                this.cachedTopologyString = topology;
-                updateStoredTopology(topology);
-            }
-            LOG.debug("Added endpoint " + endpoint);
+//            String topology = getTopologyFromVisp(endpoint);
+//            if(!this.getCachedTopologyString().equals(topology)) {
+//                this.setCachedTopologyString(topology);
+//                updateStoredTopology(topology);
+//            }
+//            LOG.debug("Added endpoint " + endpoint);
         }
     }
 
@@ -61,10 +69,10 @@ public class VispCommunicator {
         return vispRuntimeIdentifiers;
     }
 
-    public String getTopology(VispRuntimeIdentifier rt) {
+    public String getTopologyFromVisp(VispRuntimeIdentifier rt) {
         RestTemplate restTemplate = new RestTemplate();
         URI targetUrl = UriComponentsBuilder.fromUriString("http://" + rt)
-                .path("/getTopology")
+                .path("/getTopologyFromVisp")
                 .build()
                 .toUri();
         String topology = restTemplate.getForObject(targetUrl, String.class);

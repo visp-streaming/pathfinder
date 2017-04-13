@@ -7,6 +7,8 @@ import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.IOException;
+
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -35,5 +37,7 @@ public class ApiTest {
         get("/circuitbreaker/open");
         get("/users").then().body("status", equalTo("Circuit open"));
     }
+
+
 
 }
