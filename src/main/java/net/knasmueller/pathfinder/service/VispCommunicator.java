@@ -104,6 +104,10 @@ public class VispCommunicator {
         LOG.debug("For step1:");
         LOG.debug(allStatistics.get("step1").toString());
 
+        persistStatisticEntries(allStatistics);
+    }
+
+    public void persistStatisticEntries(Map<String, SingleOperatorStatistics> allStatistics) {
         for(Map.Entry<String, SingleOperatorStatistics> e : allStatistics.entrySet()) {
             SingleOperatorStatistics s = e.getValue();
             s.setOperatorName(e.getKey());
