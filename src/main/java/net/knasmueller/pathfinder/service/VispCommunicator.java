@@ -4,6 +4,7 @@ import ac.at.tuwien.infosys.visp.topologyParser.TopologyParser;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
 import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
+import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class VispCommunicator {
 
     @Autowired
     VispTopology vispTopology;
+
+    @Autowired
+    SingleOperatorStatisticsRepository singleOperatorStatisticsRepository;
 
     public String cachedTopologyString = "";
 
@@ -99,5 +103,11 @@ public class VispCommunicator {
         allStatistics = restTemplate.getForObject(targetUrl, OperatorStatisticsResponse.class);
         LOG.debug("For step1:");
         LOG.debug(allStatistics.get("step1").toString());
+
+        for(Map.Entry<String, SingleOperatorStatistics> e : allStatistics.entrySet()) {
+            SingleOperatorStatistics s = e.getValue();
+            s.setOperatorName(e.getKey());
+            singleOperatorStatisticsRepository.save(s);
+        }
     }
 }

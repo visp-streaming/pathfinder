@@ -2,9 +2,35 @@ package net.knasmueller.pathfinder.entities.operator_statistics;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import java.sql.Timestamp;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Entity
 public class SingleOperatorStatistics {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+
+    Timestamp timestamp;
+
+    String operatorName;
+
+    public String getOperatorName() {
+        return operatorName;
+    }
+
+    public void setOperatorName(String operatorName) {
+        this.operatorName = operatorName;
+    }
+
+    public SingleOperatorStatistics() {
+        timestamp = new Timestamp(System.currentTimeMillis());
+    }
 
     double cpu_now, cpu_10, cpu_20, ram_now, ram_10, ram_20, network_in, network_out, round_trip, rate_source_consumption_now,
             rate_source_consumption_10, rate_source_consumption_20, rate_sent_now, rate_sent_10, rate_sent_20;
