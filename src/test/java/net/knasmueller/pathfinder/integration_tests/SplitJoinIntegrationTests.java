@@ -3,6 +3,7 @@ package net.knasmueller.pathfinder.integration_tests;
 import ac.at.tuwien.infosys.visp.common.operators.Join;
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
+import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
 import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
@@ -32,6 +33,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static net.knasmueller.pathfinder.TestUtil.resourceToString;
 import static org.mockito.BDDMockito.given;
@@ -49,19 +51,16 @@ public class SplitJoinIntegrationTests {
     @Autowired
     private Scheduler scheduler;
 
+    @Autowired
+    private OperatorManagement operatorManagement;
+
     @Value("classpath:topologies/split_join.conf")
     private Resource splitJoinTopology;
 
     private static final Logger LOG = LoggerFactory.getLogger(SplitJoinIntegrationTests.class);
 
     @Before
-    public void setup() {
-
-    }
-
-
-    @Test
-    public void test_topologyContainsSplitAndJoin_operatorClassesAreCorrectlyRecognized() throws IOException {
+    public void setup() throws IOException {
         doReturn(resourceToString(splitJoinTopology)).when(this.vispCommunicator).getTopologyFromVisp(any());
         List<VispRuntimeIdentifier> runtimes = new ArrayList<>();
         runtimes.add(new VispRuntimeIdentifier("127.0.0.1", 1234));
@@ -72,7 +71,30 @@ public class SplitJoinIntegrationTests {
         scheduler.checkForTopologyUpdate();
 
         verify(vispCommunicator).setCachedTopologyString(any());
+    }
 
+
+    @Test
+    public void test_topologyContainsSplitAndJoin_operatorClassesAreCorrectlyRecognized() throws IOException {
+        ConcurrentHashMap<String, PathfinderOperator> topology = operatorManagement.getOperators();
+        Assert.assertTrue(topology.containsKey("split"));
+        Assert.assertTrue(topology.containsKey("join"));
+
+        PathfinderOperator split = topology.get("split");
+        PathfinderOperator join = topology.get("join");
+        PathfinderOperator step2a = topology.get("step2a");
+        PathfinderOperator source = topology.get("source");
+        PathfinderOperator log = topology.get("log");
+
+        Assert.assertTrue(PathfinderOperator.Subclass.SPLIT.equals(split.getSubclass()));
+        Assert.assertTrue(PathfinderOperator.Subclass.JOIN.equals(join.getSubclass()));
+        Assert.assertTrue(PathfinderOperator.Subclass.PROCESSING.equals(step2a.getSubclass()));
+        Assert.assertTrue(PathfinderOperator.Subclass.SOURCE.equals(source.getSubclass()));
+        Assert.assertTrue(PathfinderOperator.Subclass.SINK.equals(log.getSubclass()));
+    }
+
+    @Test
+    public void test_pathFinderOperatorsHaveCorrectSubclasses() throws IOException {
         Map<String, Operator> topology = vispCommunicator.getVispTopology().getTopology();
 
         Assert.assertTrue(topology.containsKey("split"));

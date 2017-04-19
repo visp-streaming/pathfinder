@@ -1,5 +1,6 @@
 package net.knasmueller.pathfinder.service;
 
+import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.topologyParser.TopologyParser;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
@@ -28,6 +29,9 @@ public class VispCommunicator {
 
     @Autowired
     VispTopology vispTopology;
+
+    @Autowired
+    private OperatorManagement operatorManagement;
 
     @Autowired
     SingleOperatorStatisticsRepository singleOperatorStatisticsRepository;
@@ -88,9 +92,9 @@ public class VispCommunicator {
 
     public void updateStoredTopology(String newTopology) {
         LOG.debug("UPDATING stored VISP topology");
-        vispTopology.setTopology(topologyParser.parseTopologyFromString(newTopology).topology);
-
-        // TODO: actually react to the changed topology
+        Map<String, Operator> topology = topologyParser.parseTopologyFromString(newTopology).topology;
+        vispTopology.setTopology(topology);
+        operatorManagement.topologyUpdate(topology);
     }
 
     public OperatorStatisticsResponse getStatisticsFromVisp(VispRuntimeIdentifier rt) {

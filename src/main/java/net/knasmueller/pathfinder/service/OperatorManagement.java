@@ -36,7 +36,19 @@ public class OperatorManagement {
         return operatorMap;
     }
 
-    public Map<String,List<String>> getAlternativePaths(Map<String, Operator> topology) {
+    public void topologyUpdate(Map<String, Operator> newTopology) {
+        /** this function is called when the VISP instance has a new topology.
+         * It removes and recreates the local operator topology
+         * **/
+
+        operatorMap.clear();
+        for(String operatorId : newTopology.keySet()) {
+            PathfinderOperator operator = new PathfinderOperator(newTopology.get(operatorId));
+            operatorMap.put(operatorId, operator);
+        }
+    }
+
+    public static Map<String,List<String>> getAlternativePaths(Map<String, Operator> topology) {
         /** this function extracts each split operator with the list of children in the correct order **/
         Map<String,List<String>> result = new HashMap<>();
         for(String operatorId : topology.keySet()) {
