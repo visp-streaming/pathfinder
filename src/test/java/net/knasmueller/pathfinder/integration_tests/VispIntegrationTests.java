@@ -42,13 +42,7 @@ public class VispIntegrationTests {
         given(this.vispCommunicator.
                 getTopologyFromVisp(new VispRuntimeIdentifier("127.0.0.1:1234"))
         ).willReturn(
-                "$source = Source() {\n" +
-                        "  concreteLocation = 192.168.0.1/openstackpool,\n" +
-                        "  type             = source,\n" +
-                        "  outputFormat     = \"temperature data from sensor XYZ\",\n" +
-                        "  #meaningless for sources and should be ignored by parser:\n" +
-                        "  expectedDuration = 15\n" +
-                        "}");
+                getExampleTopology());
 
         List<VispRuntimeIdentifier> runtimes = new ArrayList<>();
         runtimes.add(new VispRuntimeIdentifier("127.0.0.1", 1234));
