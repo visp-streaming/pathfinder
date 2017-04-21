@@ -5,13 +5,9 @@ import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
-import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
-import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
 import net.knasmueller.pathfinder.service.OperatorManagement;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
-import net.knasmueller.pathfinder.service.nexus.INexus;
-import net.knasmueller.pathfinder.service.nexus.RuleBasedNexus;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,25 +17,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static net.knasmueller.pathfinder.TestUtil.resourceToString;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
@@ -76,7 +67,7 @@ public class SplitJoinIntegrationTests {
 
     @Test
     public void test_topologyContainsSplitAndJoin_operatorClassesAreCorrectlyRecognized() throws IOException {
-        ConcurrentHashMap<String, PathfinderOperator> topology = operatorManagement.getOperators();
+        HashMap<String, PathfinderOperator> topology = operatorManagement.getOperators();
         Assert.assertTrue(topology.containsKey("split"));
         Assert.assertTrue(topology.containsKey("join"));
 

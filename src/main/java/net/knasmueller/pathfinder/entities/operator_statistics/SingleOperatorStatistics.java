@@ -192,7 +192,7 @@ public class SingleOperatorStatistics {
                 '}';
     }
 
-    public static SingleOperatorStatistics fromDefault() {
+    public static SingleOperatorStatistics fromDefault(String operatorName) {
         SingleOperatorStatistics s = new SingleOperatorStatistics();
         s.setCpu_now(0.5);
         s.setCpu_10(0.5);
@@ -212,6 +212,11 @@ public class SingleOperatorStatistics {
         s.setKilled_process(false);
         s.setSum_source_messages(0);
         s.setSum_outgoing_messages(0);
+        s.setOperatorName(operatorName);
         return s;
+    }
+
+    public static SingleOperatorStatistics fromDefault() {
+        return fromDefault(null);
     }
 }

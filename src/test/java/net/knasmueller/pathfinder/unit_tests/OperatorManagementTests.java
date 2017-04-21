@@ -19,6 +19,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -103,5 +104,18 @@ public class OperatorManagementTests {
         Assert.assertTrue(alternativePaths.containsKey("split2"));
         Assert.assertTrue(alternativePaths.get("split2").get(0).equals("step4b"));
         Assert.assertTrue(alternativePaths.get("split2").get(1).equals("step4a"));
+    }
+
+    @Test
+    public void test_operatorStatusUpdateOneOperator_updateIsPerformed() throws IOException {
+        Map<String, Operator> topology =
+                topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
+        operatorManagement.topologyUpdate(topology);
+        Assert.assertTrue(operatorManagement.isOperatorAvailable("step2a"));
+        Map<String, INexus.OperatorClassification> update = new HashMap<>();
+        update.put("step2a", INexus.OperatorClassification.FAILED);
+        operatorManagement.updateOperatorAvailabilities(update);
+
+        Assert.assertFalse(operatorManagement.isOperatorAvailable("step2a"));
     }
 }

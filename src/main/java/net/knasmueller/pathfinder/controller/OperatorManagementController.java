@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
@@ -28,7 +29,7 @@ public class OperatorManagementController {
     }
 
     @RequestMapping("/getOperators")
-    public ConcurrentHashMap<String, PathfinderOperator> getOperators() {
+    public HashMap<String, PathfinderOperator> getOperators() {
         return operatorManagement.getOperators();
     }
 }
