@@ -3,7 +3,6 @@ package net.knasmueller.pathfinder.service;
 import net.knasmueller.pathfinder.exceptions.InvalidCircuitBreakerTransition;
 import org.springframework.stereotype.Service;
 
-@Service
 public class CircuitBreaker {
     enum State {OPEN, HALF_OPEN, CLOSED}
 

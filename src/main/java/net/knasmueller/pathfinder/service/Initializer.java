@@ -1,6 +1,5 @@
 package net.knasmueller.pathfinder.service;
 
-import net.knasmueller.pathfinder.controller.CircuitBreakerController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

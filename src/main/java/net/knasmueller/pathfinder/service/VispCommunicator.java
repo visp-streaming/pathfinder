@@ -31,7 +31,7 @@ public class VispCommunicator {
     VispTopology vispTopology;
 
     @Autowired
-    private OperatorManagement operatorManagement;
+    private ProcessingOperatorManagement processingOperatorManagement;
 
     @Autowired
     SingleOperatorStatisticsRepository singleOperatorStatisticsRepository;
@@ -94,7 +94,7 @@ public class VispCommunicator {
         LOG.debug("UPDATING stored VISP topology");
         Map<String, Operator> topology = topologyParser.parseTopologyFromString(newTopology).topology;
         vispTopology.setTopology(topology);
-        operatorManagement.topologyUpdate(topology);
+        processingOperatorManagement.topologyUpdate(topology);
     }
 
     public OperatorStatisticsResponse getStatisticsFromVisp(VispRuntimeIdentifier rt) {

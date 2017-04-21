@@ -14,18 +14,18 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class OperatorManagement {
+public class ProcessingOperatorManagement {
     /* TODO: maybe think again if this is the best way to map this relation */
-    private static final Logger LOG = LoggerFactory.getLogger(OperatorManagement.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorManagement.class);
 
-    HashMap<String, PathfinderOperator> operatorMap = new HashMap<>();
+    HashMap<String, PathfinderOperator> processingOperatorMap = new HashMap<>(); // stores each processing operator's status
 
     public void setOperatorStatus(String operatorId, String status) {
         try {
-            if(!operatorMap.containsKey(operatorId)) {
-                operatorMap.put(operatorId, new PathfinderOperator(operatorId));
+            if(!processingOperatorMap.containsKey(operatorId)) {
+                processingOperatorMap.put(operatorId, new PathfinderOperator(operatorId));
             }
-            operatorMap.get(operatorId).setStatus( "working".equals(status.toLowerCase()) ?
+            processingOperatorMap.get(operatorId).setStatus( "working".equals(status.toLowerCase()) ?
                     PathfinderOperator.Status.WORKING : PathfinderOperator.Status.FAILED );
         } catch(Exception e) {
             LOG.error("Could not set operator status for operatorId = " + operatorId, e);
@@ -49,7 +49,7 @@ public class OperatorManagement {
     }
 
     public HashMap<String, PathfinderOperator> getOperators() {
-        return operatorMap;
+        return processingOperatorMap;
     }
 
     public void topologyUpdate(Map<String, Operator> newTopology) {
@@ -57,12 +57,12 @@ public class OperatorManagement {
          * It removes and recreates the local operator topology
          * **/
 
-        operatorMap.clear();
+        processingOperatorMap.clear();
         for(String operatorId : newTopology.keySet()) {
             PathfinderOperator operator = new PathfinderOperator(newTopology.get(operatorId));
             // assume each operator is working in the beginning
             operator.setStatus(PathfinderOperator.Status.WORKING);
-            operatorMap.put(operatorId, operator);
+            processingOperatorMap.put(operatorId, operator);
         }
 
         return;
@@ -85,10 +85,10 @@ public class OperatorManagement {
 
     public boolean isOperatorAvailable(String operatorId) {
         try {
-            if(!operatorMap.containsKey(operatorId)) {
+            if(!processingOperatorMap.containsKey(operatorId)) {
                 return false;
             }
-            return operatorMap.get(operatorId).getStatus().equals(PathfinderOperator.Status.WORKING);
+            return processingOperatorMap.get(operatorId).getStatus().equals(PathfinderOperator.Status.WORKING);
         } catch(Exception e) {
             LOG.error("Could not retrieve operator status for operator " + operatorId, e);
             return false;

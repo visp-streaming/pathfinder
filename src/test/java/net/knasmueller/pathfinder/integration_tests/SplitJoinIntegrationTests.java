@@ -5,7 +5,7 @@ import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
-import net.knasmueller.pathfinder.service.OperatorManagement;
+import net.knasmueller.pathfinder.service.ProcessingOperatorManagement;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import org.junit.Assert;
@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static net.knasmueller.pathfinder.TestUtil.resourceToString;
 import static org.mockito.Matchers.any;
@@ -43,7 +42,7 @@ public class SplitJoinIntegrationTests {
     private Scheduler scheduler;
 
     @Autowired
-    private OperatorManagement operatorManagement;
+    private ProcessingOperatorManagement processingOperatorManagement;
 
     @Value("classpath:topologies/split_join.conf")
     private Resource splitJoinTopology;
@@ -67,7 +66,7 @@ public class SplitJoinIntegrationTests {
 
     @Test
     public void test_topologyContainsSplitAndJoin_operatorClassesAreCorrectlyRecognized() throws IOException {
-        HashMap<String, PathfinderOperator> topology = operatorManagement.getOperators();
+        HashMap<String, PathfinderOperator> topology = processingOperatorManagement.getOperators();
         Assert.assertTrue(topology.containsKey("split"));
         Assert.assertTrue(topology.containsKey("join"));
 

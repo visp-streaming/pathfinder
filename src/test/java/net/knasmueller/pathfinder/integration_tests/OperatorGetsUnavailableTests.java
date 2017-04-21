@@ -1,12 +1,9 @@
 package net.knasmueller.pathfinder.integration_tests;
 
-import ac.at.tuwien.infosys.visp.common.operators.Join;
-import ac.at.tuwien.infosys.visp.common.operators.Operator;
-import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
-import net.knasmueller.pathfinder.service.OperatorManagement;
+import net.knasmueller.pathfinder.service.ProcessingOperatorManagement;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import net.knasmueller.pathfinder.service.nexus.INexus;
@@ -28,8 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static net.knasmueller.pathfinder.TestUtil.resourceToString;
 import static org.mockito.Matchers.any;
@@ -46,7 +41,7 @@ public class OperatorGetsUnavailableTests {
     private Scheduler scheduler;
 
     @Autowired
-    private OperatorManagement operatorManagement;
+    private ProcessingOperatorManagement processingOperatorManagement;
 
     RuleBasedNexus rbn;
 
@@ -87,7 +82,7 @@ public class OperatorGetsUnavailableTests {
 
     @Test
     public void test_operatorGetsUnavailable_isRecognized() throws IOException {
-        HashMap<String, PathfinderOperator> topology = operatorManagement.getOperators();
+        HashMap<String, PathfinderOperator> topology = processingOperatorManagement.getOperators();
 
         OperatorStatisticsResponse statistics = vispCommunicator.getStatisticsFromVisp(null);
         Assert.assertTrue(statistics.size() == 5);
@@ -108,7 +103,7 @@ public class OperatorGetsUnavailableTests {
 
     @Test
     public void test_operatorGetsAvailableAgain_isRecognized() throws IOException {
-        HashMap<String, PathfinderOperator> topology = operatorManagement.getOperators();
+        HashMap<String, PathfinderOperator> topology = processingOperatorManagement.getOperators();
 
         OperatorStatisticsResponse statistics = vispCommunicator.getStatisticsFromVisp(null);
         Assert.assertTrue(statistics.size() == 5);

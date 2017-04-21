@@ -2,18 +2,14 @@ package net.knasmueller.pathfinder.unit_tests;
 
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.topologyParser.TopologyParser;
-import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
-import net.knasmueller.pathfinder.integration_tests.SplitJoinIntegrationTests;
-import net.knasmueller.pathfinder.service.OperatorManagement;
+import net.knasmueller.pathfinder.service.ProcessingOperatorManagement;
 import net.knasmueller.pathfinder.service.nexus.INexus;
-import net.knasmueller.pathfinder.service.nexus.RuleBasedNexus;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -25,7 +21,7 @@ import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class OperatorManagementTests {
-    OperatorManagement operatorManagement;
+    ProcessingOperatorManagement processingOperatorManagement;
 
     private static final Logger LOG = LoggerFactory.getLogger(OperatorManagementTests.class);
 
@@ -43,7 +39,7 @@ public class OperatorManagementTests {
 
     @Before
     public void init() {
-        operatorManagement = new OperatorManagement();
+        processingOperatorManagement = new ProcessingOperatorManagement();
     }
 
     @Test
@@ -55,7 +51,7 @@ public class OperatorManagementTests {
         Assert.assertTrue(topology.keySet().contains("step2"));
         Assert.assertTrue(topology.keySet().contains("log"));
 
-        Map<String, List<String>> alternativePaths = operatorManagement.getAlternativePaths(topology);
+        Map<String, List<String>> alternativePaths = processingOperatorManagement.getAlternativePaths(topology);
 
         Assert.assertTrue(alternativePaths.size() == 0);
     }
@@ -72,7 +68,7 @@ public class OperatorManagementTests {
         Assert.assertTrue(topology.keySet().contains("step2b"));
         Assert.assertTrue(topology.keySet().contains("log"));
 
-        Map<String, List<String>> alternativePaths = operatorManagement.getAlternativePaths(topology);
+        Map<String, List<String>> alternativePaths = processingOperatorManagement.getAlternativePaths(topology);
 
         Assert.assertTrue(alternativePaths.containsKey("split"));
         Assert.assertTrue(alternativePaths.get("split").contains("step2a"));
@@ -95,7 +91,7 @@ public class OperatorManagementTests {
         Assert.assertTrue(topology.keySet().contains("join2"));
         Assert.assertTrue(topology.keySet().contains("log"));
 
-        Map<String, List<String>> alternativePaths = operatorManagement.getAlternativePaths(topology);
+        Map<String, List<String>> alternativePaths = processingOperatorManagement.getAlternativePaths(topology);
 
         Assert.assertTrue(alternativePaths.containsKey("split"));
         Assert.assertTrue(alternativePaths.get("split").contains("step2a"));
@@ -110,12 +106,12 @@ public class OperatorManagementTests {
     public void test_operatorStatusUpdateOneOperator_updateIsPerformed() throws IOException {
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
-        operatorManagement.topologyUpdate(topology);
-        Assert.assertTrue(operatorManagement.isOperatorAvailable("step2a"));
+        processingOperatorManagement.topologyUpdate(topology);
+        Assert.assertTrue(processingOperatorManagement.isOperatorAvailable("step2a"));
         Map<String, INexus.OperatorClassification> update = new HashMap<>();
         update.put("step2a", INexus.OperatorClassification.FAILED);
-        operatorManagement.updateOperatorAvailabilities(update);
+        processingOperatorManagement.updateOperatorAvailabilities(update);
 
-        Assert.assertFalse(operatorManagement.isOperatorAvailable("step2a"));
+        Assert.assertFalse(processingOperatorManagement.isOperatorAvailable("step2a"));
     }
 }
