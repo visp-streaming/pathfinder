@@ -15,10 +15,10 @@ public class PathfinderOperator extends Operator {
         this.concreteLocation = operator.getConcreteLocation();
         this.stateful = operator.isStateful();
         this.size = operator.getSize();
-        this.outputFormat = new String(operator.getOutputFormat());
+        this.outputFormat = operator.getOutputFormat() == null ? new String("") : new String(operator.getOutputFormat());
         this.status = Status.WORKING;
         this.sourcesText = new ArrayList<>(operator.getSourcesText());
-        this.type = new String(operator.getType());
+        this.type = operator.getType() == null ? new String("") : new String(operator.getType());
         this.inputFormat = operator.getInputFormat() != null ? (new ArrayList<>(operator.getInputFormat())) : new ArrayList<>();
 
         if(operator instanceof Source) {
