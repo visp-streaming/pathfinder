@@ -4,6 +4,10 @@ import net.knasmueller.pathfinder.exceptions.InvalidCircuitBreakerTransition;
 import org.springframework.stereotype.Service;
 
 public class CircuitBreaker {
+    public State getState() {
+        return this.state;
+    }
+
     enum State {OPEN, HALF_OPEN, CLOSED}
 
     private State state;

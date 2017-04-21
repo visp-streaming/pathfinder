@@ -15,7 +15,6 @@ import java.util.Map;
 
 @Service
 public class ProcessingOperatorManagement {
-    /* TODO: maybe think again if this is the best way to map this relation */
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorManagement.class);
 
     HashMap<String, PathfinderOperator> processingOperatorMap = new HashMap<>(); // stores each processing operator's status
