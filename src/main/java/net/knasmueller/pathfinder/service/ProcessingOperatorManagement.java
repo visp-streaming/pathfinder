@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ProcessingOperatorManagement {
@@ -57,6 +54,9 @@ public class ProcessingOperatorManagement {
          * **/
 
         processingOperatorMap.clear();
+        if(newTopology == null || newTopology.keySet().isEmpty()) {
+            return;
+        }
         for(String operatorId : newTopology.keySet()) {
             PathfinderOperator operator = new PathfinderOperator(newTopology.get(operatorId));
             // assume each operator is working in the beginning
@@ -66,6 +66,19 @@ public class ProcessingOperatorManagement {
 
         return;
 
+    }
+
+
+    public boolean isOperatorAvailable(String operatorId) {
+        try {
+            if(!processingOperatorMap.containsKey(operatorId)) {
+                return false;
+            }
+            return processingOperatorMap.get(operatorId).getStatus().equals(PathfinderOperator.Status.WORKING);
+        } catch(Exception e) {
+            LOG.error("Could not retrieve operator status for operator " + operatorId, e);
+            return false;
+        }
     }
 
     public static Map<String,List<String>> getAlternativePaths(Map<String, Operator> topology) {
@@ -82,15 +95,25 @@ public class ProcessingOperatorManagement {
         return result;
     }
 
-    public boolean isOperatorAvailable(String operatorId) {
-        try {
-            if(!processingOperatorMap.containsKey(operatorId)) {
-                return false;
-            }
-            return processingOperatorMap.get(operatorId).getStatus().equals(PathfinderOperator.Status.WORKING);
-        } catch(Exception e) {
-            LOG.error("Could not retrieve operator status for operator " + operatorId, e);
-            return false;
+    public static Set<String> getDownstreamOperators(Map<String, Operator> topology, String operatorId) {
+        Set<String> result = new HashSet<>();
+
+        if(topology == null || topology.isEmpty() || operatorId == null || operatorId.equals("")) {
+            return result;
         }
+
+        for(String o : topology.keySet()) {
+            // check if current operator is child of operatorId
+            List<Operator> sources = topology.get(o).getSources();
+            if(sources == null || sources.size() == 0) {
+                continue;
+            }
+            for(Operator source : sources) {
+                if(source.getName().equals(operatorId)) {
+                    result.add(o);
+                }
+            }
+        }
+        return result;
     }
 }

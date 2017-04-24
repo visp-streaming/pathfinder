@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class OperatorManagementTests {
@@ -113,5 +114,39 @@ public class OperatorManagementTests {
         processingOperatorManagement.updateOperatorAvailabilities(update);
 
         Assert.assertFalse(processingOperatorManagement.isOperatorAvailable("step2a"));
+    }
+
+    @Test
+    public void test_findDownstreamOperators_oneChild() throws IOException {
+        Map<String, Operator> topology =
+                topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
+        Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(topology, "step1");
+        Assert.assertTrue(downstreamOperators.contains("split"));
+    }
+
+    @Test
+    public void test_findDownstreamOperators_source() throws IOException {
+        Map<String, Operator> topology =
+                topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
+        Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(topology, "source");
+        Assert.assertTrue(downstreamOperators.contains("step1"));
+    }
+
+    @Test
+    public void test_findDownstreamOperators_sink() throws IOException {
+        Map<String, Operator> topology =
+                topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
+        Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(topology, "sink");
+        Assert.assertTrue(downstreamOperators.isEmpty());
+    }
+
+    @Test
+    public void test_findDownstreamOperators_twoChildren() throws IOException {
+        Map<String, Operator> topology =
+                topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
+        Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(topology, "split");
+        Assert.assertTrue(downstreamOperators.size() == 2);
+        Assert.assertTrue(downstreamOperators.contains("step2a"));
+        Assert.assertTrue(downstreamOperators.contains("step2b"));
     }
 }

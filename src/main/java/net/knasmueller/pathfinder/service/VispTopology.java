@@ -9,6 +9,13 @@ import java.util.Map;
 public class VispTopology {
     Map<String, Operator> topology;
 
+    public VispTopology(Map<String, Operator> topology) {
+        this.topology = topology;
+    }
+
+    public VispTopology() {
+    }
+
     public Map<String, Operator> getTopology() {
         return topology;
     }
