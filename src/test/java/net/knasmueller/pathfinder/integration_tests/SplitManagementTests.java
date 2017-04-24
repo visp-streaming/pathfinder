@@ -76,6 +76,19 @@ public class SplitManagementTests {
         Assert.assertFalse(splitManagement.isOpen("step3"));
     }
 
+    @Test
+    public void test_changeMultiple_changeIsStored() {
+        splitManagement.addSplitOperators(Arrays.asList("step1", "step2", "step3"));
+        splitManagement.open("step1");
+        splitManagement.open("step2");
+        splitManagement.open("step3");
+        splitManagement.close("step3");
+
+        Assert.assertTrue(splitManagement.isOpen("step1"));
+        Assert.assertTrue(splitManagement.isOpen("step2"));
+        Assert.assertFalse(splitManagement.isOpen("step3"));
+    }
+
 
 
 
