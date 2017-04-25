@@ -3,6 +3,7 @@ package net.knasmueller.pathfinder.service;
 import ac.at.tuwien.infosys.visp.common.operators.Join;
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.ProcessingOperator;
+import ac.at.tuwien.infosys.visp.common.operators.Split;
 import ac.at.tuwien.infosys.visp.topologyParser.TopologyParser;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
@@ -12,6 +13,7 @@ import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -125,8 +127,8 @@ public class VispCommunicator {
         }
     }
 
-    public Set<String> getAffectedSplitOperators(String operatorId) throws EmptyTopologyException {
-        /** returns the IDs of the affected split operators for a given processing operator.
+    public Set<Pair<String, String>> getAffectedSplitOperators(String operatorId) throws EmptyTopologyException {
+        /** returns the IDs of the affected split operators and the child for a given processing operator.
          * A split operator is affected if the processing operator's failure would cause the
          * split operator to switch to a different fallback path
          */
@@ -137,7 +139,7 @@ public class VispCommunicator {
             throw new EmptyTopologyException("Could not return list of affected operators due to empty topology");
         }
 
-        Set<String> affectedSplitOperators = new HashSet<>();
+        Set<Pair<String, String>> affectedSplitOperators = new HashSet<>();
         VispTopology topology = getVispTopology();
 
         Operator op = topology.getTopology().get(operatorId);
@@ -148,15 +150,26 @@ public class VispCommunicator {
 
         for(String split : allSplitOperators) {
             String currentOp = split;
+            String firstChild = null;
+            List<String> possibleChilds = ((Split) topology.getTopology().get(split)).getPathOrder();
             Queue<String> q = new LinkedList<>();
             q.add(currentOp);
             while(!q.isEmpty()) {
                 currentOp = q.remove();
+                if(possibleChilds.contains(currentOp)) {
+                    firstChild = currentOp;
+                }
                 LOG.info("Handling " + currentOp);
                 if(currentOp.equals(operatorId)) {
-                    if(!affectedSplitOperators.contains(split)) {
+                    boolean operatorIsAlreadyContainedInReturnSet = false;
+                    for(Pair<String, String> entry : affectedSplitOperators) {
+                        if(entry.getFirst().equals(split)) {
+                            operatorIsAlreadyContainedInReturnSet = true;
+                        }
+                    }
+                    if(!operatorIsAlreadyContainedInReturnSet) {
                         LOG.info("Adding operator to result list: " + split);
-                        affectedSplitOperators.add(split);
+                        affectedSplitOperators.add(Pair.of(split, firstChild));
                     }
                 }
                 Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(getVispTopology().getTopology(), currentOp);

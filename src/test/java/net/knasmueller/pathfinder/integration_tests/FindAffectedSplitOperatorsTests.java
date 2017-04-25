@@ -15,10 +15,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.Resource;
+import org.springframework.data.util.Pair;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -64,21 +67,34 @@ public class FindAffectedSplitOperatorsTests {
     public void test_oneOperatorIsAffected_returnParentSplitOperator() throws EmptyTopologyException, IOException {
         String topologyString = TestUtil.resourceToString(splitJoinTopology);
         doReturn(new VispTopology(topologyParser.parseTopologyFromString(topologyString).topology)).when(this.vispCommunicator).getVispTopology();
-        Set<String> affectedOperators = vispCommunicator.getAffectedSplitOperators("step2a");
-        Assert.assertTrue(affectedOperators.size() == 1);
-        Assert.assertTrue(affectedOperators.contains("split"));
+
+        Set<Pair<String, String>> affectedOperators3 = vispCommunicator.getAffectedSplitOperators("step2a");
+        Assert.assertTrue(affectedOperators3.size() == 1);
+        List<Pair<String, String>> affectedOperators3List = affectedOperators3.stream().collect(Collectors.toList());
+        Assert.assertTrue(affectedOperators3List.get(0).getFirst().equals("split"));
+        Assert.assertTrue(affectedOperators3List.get(0).getSecond().equals("step2a"));
     }
 
     @Test
     public void test_moreThanOneSplitOperator_theyAreCorrectlyAssigned() throws EmptyTopologyException, IOException {
         String topologyString = TestUtil.resourceToString(splitJoinTopology3);
         doReturn(new VispTopology(topologyParser.parseTopologyFromString(topologyString).topology)).when(this.vispCommunicator).getVispTopology();
-        Set<String> affectedOperators1 = vispCommunicator.getAffectedSplitOperators("step2a");
+        Set<Pair<String, String>> affectedOperators1 = vispCommunicator.getAffectedSplitOperators("step2a");
         Assert.assertTrue(affectedOperators1.size() == 1);
-        Assert.assertTrue(affectedOperators1.contains("split"));
+        List<Pair<String, String>> affectedOperators1List = affectedOperators1.stream().collect(Collectors.toList());
+        Assert.assertTrue(affectedOperators1List.get(0).getFirst().equals("split"));
+        Assert.assertTrue(affectedOperators1List.get(0).getSecond().equals("step2a"));
 
-        Set<String> affectedOperators2 = vispCommunicator.getAffectedSplitOperators("step5a");
+        Set<Pair<String, String>> affectedOperators2 = vispCommunicator.getAffectedSplitOperators("step5a");
         Assert.assertTrue(affectedOperators2.size() == 1);
-        Assert.assertTrue(affectedOperators2.contains("split2"));
+        List<Pair<String, String>> affectedOperators2List = affectedOperators2.stream().collect(Collectors.toList());
+        Assert.assertTrue(affectedOperators2List.get(0).getFirst().equals("split2"));
+        Assert.assertTrue(affectedOperators2List.get(0).getSecond().equals("step5a"));
+
+        Set<Pair<String, String>> affectedOperators3 = vispCommunicator.getAffectedSplitOperators("step6a");
+        Assert.assertTrue(affectedOperators3.size() == 1);
+        List<Pair<String, String>> affectedOperators3List = affectedOperators3.stream().collect(Collectors.toList());
+        Assert.assertTrue(affectedOperators3List.get(0).getFirst().equals("split2"));
+        Assert.assertTrue(affectedOperators3List.get(0).getSecond().equals("step5a"));
     }
 }
