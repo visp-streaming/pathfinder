@@ -8,10 +8,13 @@ import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import net.knasmueller.pathfinder.service.nexus.INexus;
 import net.knasmueller.pathfinder.service.nexus.RuleBasedNexus;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,21 +22,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.Resource;
+import org.springframework.data.util.Pair;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static net.knasmueller.pathfinder.TestUtil.resourceToString;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class OperatorGetsUnavailableTests {
+public class ProcessingOperatorManagementTests {
     @SpyBean
     private VispCommunicator vispCommunicator;
 
@@ -48,7 +54,10 @@ public class OperatorGetsUnavailableTests {
     @Value("classpath:topologies/split_join.conf")
     private Resource splitJoinTopology;
 
-    private static final Logger LOG = LoggerFactory.getLogger(OperatorGetsUnavailableTests.class);
+    @Value("classpath:topologies/split_join3.conf")
+    private Resource splitJoinTopology3;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorManagementTests.class);
 
     OperatorStatisticsResponse unavailableStatistics;
 
@@ -127,6 +136,38 @@ public class OperatorGetsUnavailableTests {
 
         Assert.assertTrue(rbn.predict(statistics.get("step2a")).equals(INexus.OperatorClassification.WORKING));
 
+    }
+
+
+    @Test
+    public void test_operatorStatusIsUpdatedSuchThatPathGetsUnavailable_correctAlternativePathIsSentToVisp() throws IOException {
+        List<Triple<String, String, String>> parameters = getParametersForAlternativePathTest();
+        for(Triple<String, String, String> triple : parameters) {
+            doAnswer(new Answer() {
+                @Override
+                public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                    Object[] arguments = invocationOnMock.getArguments();
+                    List<Pair<String, String>> splitPathPair = (List<Pair<String, String>>) arguments[0];
+                    Assert.assertTrue(splitPathPair.size() == 1);
+                    Assert.assertEquals(splitPathPair.get(0).getFirst(), triple.getMiddle());
+                    Assert.assertEquals(splitPathPair.get(0).getSecond(), triple.getRight());
+                    return null;
+                }
+            }).when(this.vispCommunicator).switchSplitToPath(any());
+
+            Map<String, INexus.OperatorClassification> newAvailabilities = new HashMap<>();
+            newAvailabilities.put(triple.getLeft(), INexus.OperatorClassification.FAILED);
+            processingOperatorManagement.updateOperatorAvailabilities(newAvailabilities);
+        }
+    }
+
+    private List<Triple<String, String, String>> getParametersForAlternativePathTest() {
+        List<Triple<String, String, String>> result = new ArrayList<>();
+        // 1: which operator goes down
+        // 2: which split node is affected
+        // 3: which path will the affected split node take now
+        result.add(Triple.of("step2a", "split", "step2b"));
+        return result;
     }
 
 

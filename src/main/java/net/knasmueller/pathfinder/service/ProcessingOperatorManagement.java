@@ -3,9 +3,15 @@ package net.knasmueller.pathfinder.service;
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
+import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
+import net.knasmueller.pathfinder.exceptions.NoAlternativePathAvailableException;
+import net.knasmueller.pathfinder.exceptions.OperatorNotFoundException;
 import net.knasmueller.pathfinder.service.nexus.INexus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
+import org.springframework.expression.spel.ast.OperatorNot;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -14,24 +20,27 @@ import java.util.*;
 public class ProcessingOperatorManagement {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorManagement.class);
 
+    @Autowired
+    private VispCommunicator vispCommunicator;
+
     HashMap<String, PathfinderOperator> processingOperatorMap = new HashMap<>(); // stores each processing operator's status
 
     public void setOperatorStatus(String operatorId, String status) {
         try {
-            if(!processingOperatorMap.containsKey(operatorId)) {
+            if (!processingOperatorMap.containsKey(operatorId)) {
                 processingOperatorMap.put(operatorId, new PathfinderOperator(operatorId));
             }
-            processingOperatorMap.get(operatorId).setStatus( "working".equals(status.toLowerCase()) ?
-                    PathfinderOperator.Status.WORKING : PathfinderOperator.Status.FAILED );
-        } catch(Exception e) {
+            processingOperatorMap.get(operatorId).setStatus("working".equals(status.toLowerCase()) ?
+                    PathfinderOperator.Status.WORKING : PathfinderOperator.Status.FAILED);
+        } catch (Exception e) {
             LOG.error("Could not set operator status for operatorId = " + operatorId, e);
         }
     }
 
     public void setOperatorStatus(String operatorId, INexus.OperatorClassification status) {
-        if(status.equals(INexus.OperatorClassification.FAILED)) {
+        if (status.equals(INexus.OperatorClassification.FAILED)) {
             setOperatorStatus(operatorId, "failed");
-        } else if(status.equals(INexus.OperatorClassification.WORKING)) {
+        } else if (status.equals(INexus.OperatorClassification.WORKING)) {
             setOperatorStatus(operatorId, "working");
         } else {
             throw new RuntimeException("invalid status: " + status.toString());
@@ -39,9 +48,49 @@ public class ProcessingOperatorManagement {
     }
 
     public void updateOperatorAvailabilities(Map<String, INexus.OperatorClassification> newAvailabilities) {
-        for(String operatorName : newAvailabilities.keySet()) {
+        for (String operatorName : newAvailabilities.keySet()) {
             setOperatorStatus(operatorName, newAvailabilities.get(operatorName));
         }
+
+        contactVispWithNewRecommendations(newAvailabilities);
+    }
+
+    public void contactVispWithNewRecommendations(Map<String, INexus.OperatorClassification> newAvailabilities) {
+        List<Pair<String, String>> pairsToSwitch = new ArrayList<>();
+        try {
+            for (String splitId : vispCommunicator.getVispTopology().getSplitOperatorIds()) {
+                String pathId;
+                try {
+                    pathId = getBestAvailablePath(splitId);
+                } catch (NoAlternativePathAvailableException e) {
+                    LOG.error("Could not find an available path; all down. Returning main path", e);
+                    pathId = getMainPath(splitId);
+                }
+                pairsToSwitch.add(Pair.of(splitId, pathId));
+            }
+            vispCommunicator.switchSplitToPath(pairsToSwitch);
+        } catch (EmptyTopologyException e) {
+            LOG.error("contactVispWithNewRecommendations() call without active topology", e);
+        }
+        // add recommendation for ALL split operators - VISP will be wise enough to ignore those that don't matter
+
+    }
+
+    private String getMainPath(String splitId) {
+        Split splitOperator;
+        try {
+            splitOperator = (Split) vispCommunicator.getVispTopology().getOperator(splitId);
+            return splitOperator.getPathOrder().get(0);
+        } catch (OperatorNotFoundException e) {
+            throw new RuntimeException("Could not get main path for operator " + splitId + " - operator not found");
+        } catch (EmptyTopologyException e) {
+            throw new RuntimeException("Could not get main path for operator " + splitId + " - topology is empty");
+        }
+    }
+
+    private String getBestAvailablePath(String splitId) throws NoAlternativePathAvailableException {
+        // TODO: implement me
+        return getMainPath(splitId);
     }
 
     public HashMap<String, PathfinderOperator> getOperators() {
@@ -54,10 +103,10 @@ public class ProcessingOperatorManagement {
          * **/
 
         processingOperatorMap.clear();
-        if(newTopology == null || newTopology.keySet().isEmpty()) {
+        if (newTopology == null || newTopology.keySet().isEmpty()) {
             return;
         }
-        for(String operatorId : newTopology.keySet()) {
+        for (String operatorId : newTopology.keySet()) {
             PathfinderOperator operator = new PathfinderOperator(newTopology.get(operatorId));
             // assume each operator is working in the beginning
             operator.setStatus(PathfinderOperator.Status.WORKING);
@@ -71,21 +120,21 @@ public class ProcessingOperatorManagement {
 
     public boolean isOperatorAvailable(String operatorId) {
         try {
-            if(!processingOperatorMap.containsKey(operatorId)) {
+            if (!processingOperatorMap.containsKey(operatorId)) {
                 return false;
             }
             return processingOperatorMap.get(operatorId).getStatus().equals(PathfinderOperator.Status.WORKING);
-        } catch(Exception e) {
+        } catch (Exception e) {
             LOG.error("Could not retrieve operator status for operator " + operatorId, e);
             return false;
         }
     }
 
-    public static Map<String,List<String>> getAlternativePaths(Map<String, Operator> topology) {
+    public static Map<String, List<String>> getAlternativePaths(Map<String, Operator> topology) {
         /** this function extracts each split operator with the list of children in the correct order **/
-        Map<String,List<String>> result = new HashMap<>();
-        for(String operatorId : topology.keySet()) {
-            if(topology.get(operatorId) instanceof Split) {
+        Map<String, List<String>> result = new HashMap<>();
+        for (String operatorId : topology.keySet()) {
+            if (topology.get(operatorId) instanceof Split) {
                 List<String> splitChildren = new ArrayList<>();
                 splitChildren.addAll(((Split) topology.get(operatorId)).getPathOrder());
                 result.put(operatorId, splitChildren);
@@ -98,18 +147,18 @@ public class ProcessingOperatorManagement {
     public static Set<String> getDownstreamOperators(Map<String, Operator> topology, String operatorId) {
         Set<String> result = new HashSet<>();
 
-        if(topology == null || topology.isEmpty() || operatorId == null || operatorId.equals("")) {
+        if (topology == null || topology.isEmpty() || operatorId == null || operatorId.equals("")) {
             return result;
         }
 
-        for(String o : topology.keySet()) {
+        for (String o : topology.keySet()) {
             // check if current operator is child of operatorId
             List<Operator> sources = topology.get(o).getSources();
-            if(sources == null || sources.size() == 0) {
+            if (sources == null || sources.size() == 0) {
                 continue;
             }
-            for(Operator source : sources) {
-                if(source.getName().equals(operatorId)) {
+            for (Operator source : sources) {
+                if (source.getName().equals(operatorId)) {
                     result.add(o);
                 }
             }

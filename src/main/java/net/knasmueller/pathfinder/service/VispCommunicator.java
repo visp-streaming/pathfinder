@@ -127,6 +127,17 @@ public class VispCommunicator {
         }
     }
 
+    public void switchSplitToPath(List<Pair<String, String>> splitPathPair) {
+        /**
+         * instructs VISP to change the topology such that `path` is used
+         * for the split operator `split`
+         */
+        for(Pair p : splitPathPair) {
+            LOG.info("IMPLEMENT ME: sending message to VISP to switch " + p.getFirst()
+                    + " to path " + p.getSecond());
+        }
+    }
+
     public Set<Pair<String, String>> getAffectedSplitOperators(String operatorId) throws EmptyTopologyException {
         /** returns the IDs of the affected split operators and the child for a given processing operator.
          * A split operator is affected if the processing operator's failure would cause the

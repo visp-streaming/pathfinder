@@ -3,14 +3,19 @@ package net.knasmueller.pathfinder.unit_tests;
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.topologyParser.TopologyParser;
 import net.knasmueller.pathfinder.service.ProcessingOperatorManagement;
+import net.knasmueller.pathfinder.service.VispCommunicator;
 import net.knasmueller.pathfinder.service.nexus.INexus;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -20,9 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 public class OperatorManagementTests {
-    ProcessingOperatorManagement processingOperatorManagement;
+    private ProcessingOperatorManagement processingOperatorManagement;
+
 
     private static final Logger LOG = LoggerFactory.getLogger(OperatorManagementTests.class);
 
@@ -40,7 +50,7 @@ public class OperatorManagementTests {
 
     @Before
     public void init() {
-        processingOperatorManagement = new ProcessingOperatorManagement();
+        processingOperatorManagement = Mockito.spy(new ProcessingOperatorManagement());
     }
 
     @Test
@@ -105,6 +115,14 @@ public class OperatorManagementTests {
 
     @Test
     public void test_operatorStatusUpdateOneOperator_updateIsPerformed() throws IOException {
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return null;
+            }
+        }).when(processingOperatorManagement).contactVispWithNewRecommendations(any());
+
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
         processingOperatorManagement.topologyUpdate(topology);
