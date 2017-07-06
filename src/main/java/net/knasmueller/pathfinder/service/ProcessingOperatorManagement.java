@@ -37,6 +37,11 @@ public class ProcessingOperatorManagement {
         }
     }
 
+    public PathfinderOperator.Status getOperatorStatus(String operatorId) {
+        return processingOperatorMap.get(operatorId).getStatus();
+
+    }
+
     public void setOperatorStatus(String operatorId, INexus.OperatorClassification status) {
         if (status.equals(INexus.OperatorClassification.FAILED)) {
             setOperatorStatus(operatorId, "failed");
@@ -56,6 +61,10 @@ public class ProcessingOperatorManagement {
     }
 
     public void contactVispWithNewRecommendations(Map<String, INexus.OperatorClassification> newAvailabilities) {
+        for (String s : newAvailabilities.keySet()) {
+            LOG.info("new availability: " + s + " / " + newAvailabilities.get(s));
+        }
+        // newAvailabilities probably not necessary since the availabilities have already been updated
         List<Pair<String, String>> pairsToSwitch = new ArrayList<>();
         try {
             for (String splitId : vispCommunicator.getVispTopology().getSplitOperatorIds()) {
@@ -89,8 +98,23 @@ public class ProcessingOperatorManagement {
     }
 
     private String getBestAvailablePath(String splitId) throws NoAlternativePathAvailableException {
-        // TODO: implement me
-        return getMainPath(splitId);
+        Split splitOperator;
+        try {
+            splitOperator = (Split) vispCommunicator.getVispTopology().getOperator(splitId);
+            List<String> pathAlternatives = splitOperator.getPathOrder();
+
+            for (String currentAlternative : pathAlternatives) {
+                if (getOperatorStatus(currentAlternative).equals(PathfinderOperator.Status.WORKING)) {
+                    return currentAlternative;
+                }
+            }
+            throw new NoAlternativePathAvailableException("All paths failed for split operator " + splitId);
+
+        } catch (OperatorNotFoundException e) {
+            throw new RuntimeException("Could not get main path for operator " + splitId + " - operator not found");
+        } catch (EmptyTopologyException e) {
+            throw new RuntimeException("Could not get main path for operator " + splitId + " - topology is empty");
+        }
     }
 
     public HashMap<String, PathfinderOperator> getOperators() {
