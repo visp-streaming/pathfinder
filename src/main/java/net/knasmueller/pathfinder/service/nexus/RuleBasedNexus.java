@@ -4,6 +4,11 @@ package net.knasmueller.pathfinder.service.nexus;
 import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
 import org.springframework.stereotype.Service;
 
+/**
+ * An INexus implementation based on fixed rules
+ * Uses only a selected subset of the statistical parameters for the classification task
+ */
+
 @Service
 public class RuleBasedNexus implements INexus {
     @Override

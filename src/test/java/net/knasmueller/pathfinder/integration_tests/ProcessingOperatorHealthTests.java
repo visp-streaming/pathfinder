@@ -3,7 +3,7 @@ package net.knasmueller.pathfinder.integration_tests;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
-import net.knasmueller.pathfinder.service.ProcessingOperatorManagement;
+import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import net.knasmueller.pathfinder.service.nexus.INexus;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ProcessingOperatorManagementTests {
+public class ProcessingOperatorHealthTests {
     @SpyBean
     private VispCommunicator vispCommunicator;
 
@@ -47,7 +47,7 @@ public class ProcessingOperatorManagementTests {
     private Scheduler scheduler;
 
     @Autowired
-    private ProcessingOperatorManagement processingOperatorManagement;
+    private ProcessingOperatorHealth processingOperatorHealth;
 
     RuleBasedNexus rbn;
 
@@ -57,7 +57,7 @@ public class ProcessingOperatorManagementTests {
     @Value("classpath:topologies/split_join3.conf")
     private Resource splitJoinTopology3;
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorManagementTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorHealthTests.class);
 
     OperatorStatisticsResponse unavailableStatistics;
 
@@ -73,7 +73,7 @@ public class ProcessingOperatorManagementTests {
         doReturn(runtimes).when(this.vispCommunicator).getVispRuntimeIdentifiers();
         doReturn("").when(vispCommunicator).getCachedTopologyString();
 
-        scheduler.checkForTopologyUpdate();
+        scheduler.maybePullTopologyUpdate();
 
         verify(vispCommunicator).setCachedTopologyString(any());
 
@@ -91,7 +91,7 @@ public class ProcessingOperatorManagementTests {
 
     @Test
     public void test_operatorGetsUnavailable_isRecognized() throws IOException {
-        HashMap<String, PathfinderOperator> topology = processingOperatorManagement.getOperators();
+        HashMap<String, PathfinderOperator> topology = processingOperatorHealth.getOperators();
 
         OperatorStatisticsResponse statistics = vispCommunicator.getStatisticsFromVisp(null);
         Assert.assertTrue(statistics.size() == 5);
@@ -112,7 +112,7 @@ public class ProcessingOperatorManagementTests {
 
     @Test
     public void test_operatorGetsAvailableAgain_isRecognized() throws IOException {
-        HashMap<String, PathfinderOperator> topology = processingOperatorManagement.getOperators();
+        HashMap<String, PathfinderOperator> topology = processingOperatorHealth.getOperators();
 
         OperatorStatisticsResponse statistics = vispCommunicator.getStatisticsFromVisp(null);
         Assert.assertTrue(statistics.size() == 5);
@@ -157,7 +157,7 @@ public class ProcessingOperatorManagementTests {
 
             Map<String, INexus.OperatorClassification> newAvailabilities = new HashMap<>();
             newAvailabilities.put(triple.getLeft(), INexus.OperatorClassification.FAILED);
-            processingOperatorManagement.updateOperatorAvailabilities(newAvailabilities);
+            processingOperatorHealth.updateOperatorAvailabilities(newAvailabilities);
         }
     }
 

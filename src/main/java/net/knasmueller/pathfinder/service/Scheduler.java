@@ -10,15 +10,23 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Scheduling component that automates several tasks
+ * Main functionality: querying VISP runtimes for up-to-date statistics and topologies
+ */
 @Component
 public class Scheduler {
     private static final Logger LOG = LoggerFactory.getLogger(Scheduler.class);
     @Autowired
     VispCommunicator vispCommunicator;
 
+    /**
+     * Queries all currently known VISP runtimes and asks for up-to-date statistics
+     * Statistics are then persisted to a database
+     */
     @Scheduled(fixedRate = 30000)
-    public void queryVispRuntimes() {
-        checkForTopologyUpdate();
+    public void getStatisticsFromAllRuntimes() {
+        maybePullTopologyUpdate();
 
         List<VispRuntimeIdentifier> currentlyKnownVispRuntimeIdentifiers = vispCommunicator.getVispRuntimeIdentifiers();
         LOG.info("Size: " + currentlyKnownVispRuntimeIdentifiers.size());
@@ -33,12 +41,17 @@ public class Scheduler {
         }
     }
 
-    public void checkForTopologyUpdate() {
+    /**
+     * Contacts the first VISP runtime and checks whether the locally stored topology is still the same as the one
+     * managed by VISP. If not, update the local one
+     */
+    public void maybePullTopologyUpdate() {
         if(vispCommunicator.getVispRuntimeIdentifiers().size() < 1) {
             LOG.debug("No known VISP instances - could not grab topology");
             return;
         }
-        LOG.debug("checkForTopologyUpdate()");
+        LOG.debug("maybePullTopologyUpdate()");
+        // TODO: do not always contact the first one - either random or vote
         String topology = vispCommunicator.getTopologyFromVisp(vispCommunicator.getVispRuntimeIdentifiers().get(0));
         if(!vispCommunicator.getCachedTopologyString().equals(topology)) {
             LOG.debug("Updating topology");

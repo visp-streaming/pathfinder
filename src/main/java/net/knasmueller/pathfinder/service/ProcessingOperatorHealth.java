@@ -11,20 +11,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
-import org.springframework.expression.spel.ast.OperatorNot;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+/**
+ * A service that keeps track of each processing node's health
+ */
 @Service
-public class ProcessingOperatorManagement {
-    private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorManagement.class);
+public class ProcessingOperatorHealth {
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorHealth.class);
 
     @Autowired
     private VispCommunicator vispCommunicator;
 
+    /**
+     * Similar to a topology, this map stores a PathFinderOperator object for each operator id
+     */
     HashMap<String, PathfinderOperator> processingOperatorMap = new HashMap<>(); // stores each processing operator's status
 
+    /**
+     * Updates the health status of a specific operator by a string status (working or failed)
+     * @param operatorId string identifier for the operator as used in the topology
+     * @param status the new health status for that operator
+     */
     public void setOperatorStatus(String operatorId, String status) {
         try {
             if (!processingOperatorMap.containsKey(operatorId)) {
@@ -37,11 +47,11 @@ public class ProcessingOperatorManagement {
         }
     }
 
-    public PathfinderOperator.Status getOperatorStatus(String operatorId) {
-        return processingOperatorMap.get(operatorId).getStatus();
-
-    }
-
+    /**
+     * Updates the health status of a specific operator by a classification object
+     * @param operatorId string identifier for the operator as used in the topology
+     * @param status the new health status for that operator
+     */
     public void setOperatorStatus(String operatorId, INexus.OperatorClassification status) {
         if (status.equals(INexus.OperatorClassification.FAILED)) {
             setOperatorStatus(operatorId, "failed");
@@ -52,6 +62,15 @@ public class ProcessingOperatorManagement {
         }
     }
 
+    public PathfinderOperator.Status getOperatorStatus(String operatorId) {
+        return processingOperatorMap.get(operatorId).getStatus();
+
+    }
+
+    /**
+     * Updates health status of multiple operators at once
+     * @param newAvailabilities map of (String, Classification) (coming from a classifier)
+     */
     public void updateOperatorAvailabilities(Map<String, INexus.OperatorClassification> newAvailabilities) {
         for (String operatorName : newAvailabilities.keySet()) {
             setOperatorStatus(operatorName, newAvailabilities.get(operatorName));
@@ -60,6 +79,11 @@ public class ProcessingOperatorManagement {
         contactVispWithNewRecommendations(newAvailabilities);
     }
 
+    /**
+     * Iterates over all split operators and determines the recommended output path for each of them
+     * Then contacts VISP with a list of switch recommendations
+     * @param newAvailabilities
+     */
     public void contactVispWithNewRecommendations(Map<String, INexus.OperatorClassification> newAvailabilities) {
         for (String s : newAvailabilities.keySet()) {
             LOG.info("new availability: " + s + " / " + newAvailabilities.get(s));
@@ -77,7 +101,7 @@ public class ProcessingOperatorManagement {
                 }
                 pairsToSwitch.add(Pair.of(splitId, pathId));
             }
-            vispCommunicator.switchSplitToPath(pairsToSwitch);
+            vispCommunicator.switchSplitToPath(pairsToSwitch); // TODO: doing this once for each operator and not in a batch is highly inefficient
         } catch (EmptyTopologyException e) {
             LOG.error("contactVispWithNewRecommendations() call without active topology", e);
         }
@@ -85,6 +109,11 @@ public class ProcessingOperatorManagement {
 
     }
 
+    /**
+     * Returns the main path of a specific split operator
+     * @param splitId the identifier of the split operator
+     * @return the main path of that split operator (as defined by the user's pathOrder)
+     */
     private String getMainPath(String splitId) {
         Split splitOperator;
         try {
@@ -97,6 +126,12 @@ public class ProcessingOperatorManagement {
         }
     }
 
+    /**
+     * Returns the split operator's path with the lowest path ranking that is still available
+     * @param splitId
+     * @return first operator's id of the best path
+     * @throws NoAlternativePathAvailableException
+     */
     private String getBestAvailablePath(String splitId) throws NoAlternativePathAvailableException {
         Split splitOperator;
         try {
@@ -121,11 +156,11 @@ public class ProcessingOperatorManagement {
         return processingOperatorMap;
     }
 
+    /**
+     * this function is called when the VISP instance has a new topology. It removes and recreates the local operator topology
+     * @param newTopology
+     */
     public void topologyUpdate(Map<String, Operator> newTopology) {
-        /** this function is called when the VISP instance has a new topology.
-         * It removes and recreates the local operator topology
-         * **/
-
         processingOperatorMap.clear();
         if (newTopology == null || newTopology.keySet().isEmpty()) {
             return;
@@ -154,8 +189,12 @@ public class ProcessingOperatorManagement {
         }
     }
 
+    /**
+     * this function extracts each split operator with the list of children in the correct order
+     * @param topology
+     * @return
+     */
     public static Map<String, List<String>> getAlternativePaths(Map<String, Operator> topology) {
-        /** this function extracts each split operator with the list of children in the correct order **/
         Map<String, List<String>> result = new HashMap<>();
         for (String operatorId : topology.keySet()) {
             if (topology.get(operatorId) instanceof Split) {
@@ -168,6 +207,12 @@ public class ProcessingOperatorManagement {
         return result;
     }
 
+    /**
+     * Gets all operators that are directly consuming messages of the specified operator
+     * @param topology
+     * @param operatorId
+     * @return set of downstream operator ids
+     */
     public static Set<String> getDownstreamOperators(Map<String, Operator> topology, String operatorId) {
         Set<String> result = new HashSet<>();
 

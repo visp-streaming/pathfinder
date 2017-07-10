@@ -2,7 +2,6 @@ package net.knasmueller.pathfinder.unit_tests;
 
 import net.knasmueller.pathfinder.exceptions.InvalidCircuitBreakerTransition;
 import net.knasmueller.pathfinder.service.CircuitBreaker;
-import net.knasmueller.pathfinder.service.Communicator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

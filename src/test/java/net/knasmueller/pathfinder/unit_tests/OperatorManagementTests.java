@@ -2,8 +2,7 @@ package net.knasmueller.pathfinder.unit_tests;
 
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.topologyParser.TopologyParser;
-import net.knasmueller.pathfinder.service.ProcessingOperatorManagement;
-import net.knasmueller.pathfinder.service.VispCommunicator;
+import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.nexus.INexus;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,7 +14,6 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -26,12 +24,11 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class OperatorManagementTests {
-    private ProcessingOperatorManagement processingOperatorManagement;
+    private ProcessingOperatorHealth processingOperatorHealth;
 
 
     private static final Logger LOG = LoggerFactory.getLogger(OperatorManagementTests.class);
@@ -50,7 +47,7 @@ public class OperatorManagementTests {
 
     @Before
     public void init() {
-        processingOperatorManagement = Mockito.spy(new ProcessingOperatorManagement());
+        processingOperatorHealth = Mockito.spy(new ProcessingOperatorHealth());
     }
 
     @Test
@@ -62,7 +59,7 @@ public class OperatorManagementTests {
         Assert.assertTrue(topology.keySet().contains("step2"));
         Assert.assertTrue(topology.keySet().contains("log"));
 
-        Map<String, List<String>> alternativePaths = processingOperatorManagement.getAlternativePaths(topology);
+        Map<String, List<String>> alternativePaths = processingOperatorHealth.getAlternativePaths(topology);
 
         Assert.assertTrue(alternativePaths.size() == 0);
     }
@@ -79,7 +76,7 @@ public class OperatorManagementTests {
         Assert.assertTrue(topology.keySet().contains("step2b"));
         Assert.assertTrue(topology.keySet().contains("log"));
 
-        Map<String, List<String>> alternativePaths = processingOperatorManagement.getAlternativePaths(topology);
+        Map<String, List<String>> alternativePaths = processingOperatorHealth.getAlternativePaths(topology);
 
         Assert.assertTrue(alternativePaths.containsKey("split"));
         Assert.assertTrue(alternativePaths.get("split").contains("step2a"));
@@ -102,7 +99,7 @@ public class OperatorManagementTests {
         Assert.assertTrue(topology.keySet().contains("join2"));
         Assert.assertTrue(topology.keySet().contains("log"));
 
-        Map<String, List<String>> alternativePaths = processingOperatorManagement.getAlternativePaths(topology);
+        Map<String, List<String>> alternativePaths = processingOperatorHealth.getAlternativePaths(topology);
 
         Assert.assertTrue(alternativePaths.containsKey("split"));
         Assert.assertTrue(alternativePaths.get("split").contains("step2a"));
@@ -121,24 +118,24 @@ public class OperatorManagementTests {
             public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
                 return null;
             }
-        }).when(processingOperatorManagement).contactVispWithNewRecommendations(any());
+        }).when(processingOperatorHealth).contactVispWithNewRecommendations(any());
 
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
-        processingOperatorManagement.topologyUpdate(topology);
-        Assert.assertTrue(processingOperatorManagement.isOperatorAvailable("step2a"));
+        processingOperatorHealth.topologyUpdate(topology);
+        Assert.assertTrue(processingOperatorHealth.isOperatorAvailable("step2a"));
         Map<String, INexus.OperatorClassification> update = new HashMap<>();
         update.put("step2a", INexus.OperatorClassification.FAILED);
-        processingOperatorManagement.updateOperatorAvailabilities(update);
+        processingOperatorHealth.updateOperatorAvailabilities(update);
 
-        Assert.assertFalse(processingOperatorManagement.isOperatorAvailable("step2a"));
+        Assert.assertFalse(processingOperatorHealth.isOperatorAvailable("step2a"));
     }
 
     @Test
     public void test_findDownstreamOperators_oneChild() throws IOException {
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
-        Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(topology, "step1");
+        Set<String> downstreamOperators = ProcessingOperatorHealth.getDownstreamOperators(topology, "step1");
         Assert.assertTrue(downstreamOperators.contains("split"));
     }
 
@@ -146,7 +143,7 @@ public class OperatorManagementTests {
     public void test_findDownstreamOperators_source() throws IOException {
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
-        Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(topology, "source");
+        Set<String> downstreamOperators = ProcessingOperatorHealth.getDownstreamOperators(topology, "source");
         Assert.assertTrue(downstreamOperators.contains("step1"));
     }
 
@@ -154,7 +151,7 @@ public class OperatorManagementTests {
     public void test_findDownstreamOperators_sink() throws IOException {
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
-        Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(topology, "sink");
+        Set<String> downstreamOperators = ProcessingOperatorHealth.getDownstreamOperators(topology, "sink");
         Assert.assertTrue(downstreamOperators.isEmpty());
     }
 
@@ -162,7 +159,7 @@ public class OperatorManagementTests {
     public void test_findDownstreamOperators_twoChildren() throws IOException {
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
-        Set<String> downstreamOperators = ProcessingOperatorManagement.getDownstreamOperators(topology, "split");
+        Set<String> downstreamOperators = ProcessingOperatorHealth.getDownstreamOperators(topology, "split");
         Assert.assertTrue(downstreamOperators.size() == 2);
         Assert.assertTrue(downstreamOperators.contains("step2a"));
         Assert.assertTrue(downstreamOperators.contains("step2b"));

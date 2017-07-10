@@ -5,7 +5,7 @@ import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
-import net.knasmueller.pathfinder.service.ProcessingOperatorManagement;
+import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import org.junit.Assert;
@@ -42,7 +42,7 @@ public class SplitJoinIntegrationTests {
     private Scheduler scheduler;
 
     @Autowired
-    private ProcessingOperatorManagement processingOperatorManagement;
+    private ProcessingOperatorHealth processingOperatorHealth;
 
     @Value("classpath:topologies/split_join.conf")
     private Resource splitJoinTopology;
@@ -58,7 +58,7 @@ public class SplitJoinIntegrationTests {
         doReturn(runtimes).when(this.vispCommunicator).getVispRuntimeIdentifiers();
         doReturn("").when(vispCommunicator).getCachedTopologyString();
 
-        scheduler.checkForTopologyUpdate();
+        scheduler.maybePullTopologyUpdate();
 
         verify(vispCommunicator).setCachedTopologyString(any());
     }
@@ -66,7 +66,7 @@ public class SplitJoinIntegrationTests {
 
     @Test
     public void test_topologyContainsSplitAndJoin_operatorClassesAreCorrectlyRecognized() throws IOException {
-        HashMap<String, PathfinderOperator> topology = processingOperatorManagement.getOperators();
+        HashMap<String, PathfinderOperator> topology = processingOperatorHealth.getOperators();
         Assert.assertTrue(topology.containsKey("split"));
         Assert.assertTrue(topology.containsKey("join"));
 

@@ -6,6 +6,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * This component is automatically executed on a pathFinder instance's construction
+ * It performs initialization code that connects the instance to a previously set up pathfinder network
+ */
 @Component
 public class Initializer {
 

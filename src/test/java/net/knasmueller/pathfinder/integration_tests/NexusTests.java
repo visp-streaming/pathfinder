@@ -11,8 +11,6 @@ import net.knasmueller.pathfinder.service.nexus.RuleBasedNexus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 
 @RunWith(SpringRunner.class)
@@ -64,7 +59,7 @@ public class NexusTests {
         doReturn(r).when(this.vispCommunicator).getStatisticsFromVisp(any());
         doReturn(runtimes).when(this.vispCommunicator).getVispRuntimeIdentifiers();
         doReturn(VispIntegrationTests.getExampleTopology()).when(vispCommunicator).getTopologyFromVisp(any());
-        scheduler.queryVispRuntimes();
+        scheduler.getStatisticsFromAllRuntimes();
 
         RuleBasedNexus ruleBasedNexus = new RuleBasedNexus();
 
