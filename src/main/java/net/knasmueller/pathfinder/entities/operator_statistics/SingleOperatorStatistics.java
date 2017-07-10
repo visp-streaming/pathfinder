@@ -8,6 +8,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.sql.Timestamp;
 
+/**
+ * Container for the statistical data for one specific operator at a specific time
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 public class SingleOperatorStatistics {
@@ -16,6 +20,9 @@ public class SingleOperatorStatistics {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
+    /**
+     * Timestamp of statistics measurement
+     */
     Timestamp timestamp;
 
     String operatorName;

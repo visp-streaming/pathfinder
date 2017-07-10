@@ -5,6 +5,9 @@ import ac.at.tuwien.infosys.visp.common.operators.*;
 
 import java.util.ArrayList;
 
+/**
+ * Extension of the operator for PathFinder specific purposes
+ */
 public class PathfinderOperator extends Operator {
 
     public PathfinderOperator(Operator operator) {
@@ -74,6 +77,10 @@ public class PathfinderOperator extends Operator {
         this.status = status;
     }
 
+    /**
+     * Returns enum describing the original operator's subclass
+     * @return
+     */
     public Subclass getSubclass() {
         return subclass;
     }

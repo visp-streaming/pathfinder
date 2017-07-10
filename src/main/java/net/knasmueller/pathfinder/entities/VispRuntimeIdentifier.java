@@ -1,6 +1,9 @@
 package net.knasmueller.pathfinder.entities;
 
 
+/**
+ * Uniquely identifies a VISP runtime by IP and port
+ */
 public class VispRuntimeIdentifier {
     String ip;
     int port;
