@@ -50,7 +50,7 @@ var updateRuntimes = function () {
         })
         .fail(function () {
             console.log("Could not reach pathFinder backend");
-            showFallback();
+            showFallbackRuntimes();
             clearInterval(runtimePullInterval);
         });
 };

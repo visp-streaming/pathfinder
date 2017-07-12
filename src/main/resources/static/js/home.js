@@ -1,4 +1,12 @@
+var totalVispInstances = 0;
+
 var pullInterval = null;
+
+var refreshAll = function() {
+    updateStatistics();
+    updateTopology();
+    updateRuntimes();
+}
 
 $(document).ready(function () {
 
@@ -20,6 +28,8 @@ var updateStatistics = function () {
             $('#statistics_version').text(data['version']);
             $('#statistics_dbentries').text(data['dbentries']);
             $('#statistics_uptime').text(data['uptime']);
+
+            totalVispInstances = parseInt(data['instances']);
         })
         .fail(function(){
             console.log("Could not reach pathFinder backend");
@@ -30,5 +40,7 @@ var updateStatistics = function () {
             $('#statistics_dbentries').text("-");
             $('#statistics_uptime').text("OFFLINE");
             clearInterval(pullInterval);
+
+            totalVispInstances = 0;
         })
 };
