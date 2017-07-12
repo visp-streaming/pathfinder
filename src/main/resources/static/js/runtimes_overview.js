@@ -9,7 +9,7 @@ $(document).ready(function () {
 });
 
 
-var showFallback = function () {
+var showFallbackRuntimes = function () {
     $("#current_runtimes_rows").html("");
     $("#current_runtimes_unavailable").show();
     $("#current_runtimes_content").hide();
@@ -22,8 +22,8 @@ var updateRuntimes = function () {
     })
         .done(function (data) {
 
-            if (data.instances.length < 1) {
-                showFallback();
+            if (data["instances"].length == 0) {
+                showFallbackRuntimes();
                 return;
             }
 

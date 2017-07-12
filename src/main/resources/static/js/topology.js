@@ -22,7 +22,7 @@ var updateTopology = function () {
         .done(function (data) {
             var topologyFileContent = (window.atob(data.topology)).replace(/(?: )/g, '&nbsp;').replace(/(?:\r\n|\r|\n)/g, '<br />');
 
-            if (!(/\S/.test(topologyFileContent))) {
+            if (!(/\S/.test(topologyFileContent)) || $('#statistics_instances').val() == 0) {
                 // topology is empty
                 showFallback();
                 return;
