@@ -1,11 +1,3 @@
-var fetchedInstances = {
-    "instances": [
-        {"id": "1", "ip": "127.0.0.1", "port": "8000"},
-        {"id": "2", "ip": "127.0.0.2", "port": "8001"},
-        {"id": "3", "ip": "127.0.0.3", "port": "8002"}
-    ]
-};
-
 var runtimePullInterval = null;
 
 $(document).ready(function () {

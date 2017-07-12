@@ -10,12 +10,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import java.util.Base64;
 
 
 @RestController
@@ -82,4 +85,19 @@ public class PathFinderStatisticsController {
 
         return result;
     }
+
+    @RequestMapping("/getTopology")
+    public HashMap<Object, Object> getTopology() throws UnsupportedEncodingException {
+        LOG.debug("Call to /getTopology");
+        HashMap<Object, Object> result = new HashMap<>();
+
+        byte[] encodedBytes = Base64.getEncoder().encode(vispCommunicator.getCachedTopologyString().getBytes());
+
+
+        result.put("topology", new String(encodedBytes, "UTF8"));
+
+        return result;
+    }
+
+
 }
