@@ -20,6 +20,7 @@ import java.util.*;
  */
 @Service
 public class ProcessingOperatorHealth {
+    // TODO: refactor; some methods belong to SplitManagement
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorHealth.class);
 
     @Autowired
@@ -140,6 +141,8 @@ public class ProcessingOperatorHealth {
 
             for (String currentAlternative : pathAlternatives) {
                 if (getOperatorStatus(currentAlternative).equals(PathfinderOperator.Status.WORKING)) {
+                    //TODO: this is insufficient; the error does not need to be in the first operator, it could also be
+                    // that a downstream operator is failing
                     return currentAlternative;
                 }
             }
@@ -189,13 +192,24 @@ public class ProcessingOperatorHealth {
         }
     }
 
+    public Map<String, List<String>> getAlternativePaths() {
+        try {
+            return getAlternativePaths(vispCommunicator.getVispTopology().getTopology());
+        } catch (EmptyTopologyException e) {
+            return new HashMap<>();
+        }
+    }
+
     /**
      * this function extracts each split operator with the list of children in the correct order
      * @param topology
      * @return
      */
-    public static Map<String, List<String>> getAlternativePaths(Map<String, Operator> topology) {
+    public static Map<String, List<String>> getAlternativePaths(Map<String, Operator> topology) throws EmptyTopologyException {
         Map<String, List<String>> result = new HashMap<>();
+        if(topology == null) {
+            throw new EmptyTopologyException();
+        }
         for (String operatorId : topology.keySet()) {
             if (topology.get(operatorId) instanceof Split) {
                 List<String> splitChildren = new ArrayList<>();

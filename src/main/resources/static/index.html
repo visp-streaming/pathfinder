@@ -24,7 +24,10 @@
         <div class="col-md-3 left_col">
             <div class="left_col scroll-view">
                 <div class="navbar nav_title" style="border: 0;">
-                    <div class="site_title"><span>PathFinder</span> <button onclick="refreshAll();" type="button" class="btn btn-primary btn-xs"><i class="fa fa-repeat"></i></button></div>
+                    <div class="site_title"><span>PathFinder</span>
+                        <button onclick="refreshAll();" type="button" class="btn btn-primary btn-xs"><i
+                                class="fa fa-repeat"></i></button>
+                    </div>
                 </div>
 
                 <div class="clearfix"></div>
@@ -130,6 +133,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-6 col-sm-6 col-xs-12">
                     <div class="x_panel">
                         <div class="x_title">
@@ -141,7 +145,8 @@
                             <form id="demo-form2" class="form-horizontal form-label-left">
 
                                 <div class="form-group">
-                                    <label class="control-label col-md-3 col-sm-3 col-xs-12" for="visp_endpoint_to_add">IP:Port
+                                    <label class="control-label col-md-3 col-sm-3 col-xs-12"
+                                           for="visp_endpoint_to_add">IP:Port
                                         <span class="required">*</span>
                                     </label>
                                     <div class="col-md-6 col-sm-6 col-xs-12">
@@ -160,10 +165,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-12">
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-6 col-xs-12">
                     <div class="x_panel">
                         <div class="x_title">
-                            <h2>Topology</h2>
+                            <h2>Operators</h2>
                             <ul class="nav navbar-right panel_toolbox">
                                 <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                 </li>
@@ -177,35 +184,116 @@
                             <div class="clearfix"></div>
                         </div>
                         <div class="x_content">
-                            <div style="display: none;" class="x_content" id="topology_content_fallback">
-                                <div class="alert alert-info" role="alert"><strong>No topology info</strong></div>
+                            <div style="display: none;" class="x_content" id="operators_content_fallback">
+                                <div class="alert alert-info" role="alert"><strong>No operator info</strong></div>
                             </div>
-                            <div id="topology_content">
-                                <code class="language-vtdl" data-lang="html" id="topology_file_content">
-                                </code>
+                            <div id="operators_content">
+                                <h2>Split Operators</h2>
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Active Path</th>
+                                        <th>Total Paths</th>
+                                        <th>Failed Paths</th>
+                                        <th>Available Paths</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="split_operators_rows">
+                                    </tbody>
+                                </table>
+
+                                <h2>Real Operators</h2>
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>concreteLocation</th>
+                                        <th>Subclass</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="operators_rows">
+                                    </tbody>
+                                </table>
+
                             </div>
-
-
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Operator Details</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                       aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                </li>
+                                <li><a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+                            Select an operator to display more info.
                         </div>
                     </div>
                 </div>
             </div>
-
-            <br/>
-
-
+            <div class="row">
         </div>
-        <!-- /page content -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Topology</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                   aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                            </li>
+                            <li><a class="close-link"><i class="fa fa-close"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <div style="display: none;" class="x_content" id="topology_content_fallback">
+                            <div class="alert alert-info" role="alert"><strong>No topology info</strong></div>
+                        </div>
+                        <div id="topology_content">
+                            <code class="language-vtdl" data-lang="html" id="topology_file_content">
+                            </code>
+                        </div>
 
-        <!-- footer content -->
-        <footer>
-            <div class="pull-right">
-                PathFinder
+
+                    </div>
+                </div>
             </div>
-            <div class="clearfix"></div>
-        </footer>
-        <!-- /footer content -->
+        </div>
+
+        <br/>
+
+
     </div>
+    <!-- /page content -->
+
+    <!-- footer content -->
+    <footer>
+        <div class="pull-right">
+            PathFinder
+        </div>
+        <div class="clearfix"></div>
+    </footer>
+    <!-- /footer content -->
+</div>
 </div>
 
 <!-- jQuery -->
@@ -224,6 +312,9 @@
 
 <!-- Fetch topology data -->
 <script src="js/topology.js"></script>
+
+<!-- Fetch operator data -->
+<script src="js/operators.js"></script>
 
 </body>
 </html>

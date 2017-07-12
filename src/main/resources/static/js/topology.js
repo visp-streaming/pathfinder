@@ -20,7 +20,7 @@ var updateTopology = function () {
         url: "/webfrontend/getTopology"
     })
         .done(function (data) {
-            if (totalVispInstances === 0) {
+            if (totalVispInstances === 0 || data["topology"].trim().length == 0) {
                 // topology is empty
                 showFallbackTopology();
                 return;

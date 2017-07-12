@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * used by the nexus to update circuit breaker status for all known split operators
@@ -41,6 +42,10 @@ public class SplitManagement {
         for(String s : splitOperators) {
             circuitBreakerMap.put(s, new CircuitBreaker());
         }
+    }
+
+    public Set<String> getSplitOperatorIds() {
+        return circuitBreakerMap.keySet();
     }
 
     public boolean isOpen(String operatorId) {

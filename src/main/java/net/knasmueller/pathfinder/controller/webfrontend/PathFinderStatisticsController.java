@@ -1,7 +1,10 @@
 package net.knasmueller.pathfinder.controller.webfrontend;
 
+import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
+import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
+import net.knasmueller.pathfinder.service.SplitManagement;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,12 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import java.util.Base64;
 
 
 @RestController
@@ -33,7 +32,13 @@ public class PathFinderStatisticsController {
     private VispCommunicator vispCommunicator;
 
     @Autowired
+    private ProcessingOperatorHealth poh;
+
+    @Autowired
     private SingleOperatorStatisticsRepository sosr;
+
+    @Autowired
+    private SplitManagement spm;
 
     private static final Logger LOG = LoggerFactory.getLogger(PathFinderStatisticsController.class);
 
@@ -99,5 +104,50 @@ public class PathFinderStatisticsController {
         return result;
     }
 
+    @RequestMapping("/getOperators")
+    public HashMap<Object, Object> getOperators() {
+        LOG.debug("Call to /getOperators");
+        HashMap<Object, Object> result = new HashMap<>();
+
+        List<HashMap<Object, Object>> operatorsList = new ArrayList<>();
+
+        HashMap<String, PathfinderOperator> operators = poh.getOperators();
+
+        for(String operatorId : operators.keySet()) {
+            if(operators.get(operatorId).getSubclass().equals(PathfinderOperator.Subclass.SPLIT) || operators.get(operatorId).getSubclass().equals(PathfinderOperator.Subclass.JOIN)) {
+                continue;
+            }
+            HashMap<Object, Object> operator = new HashMap<>();
+            operator.put("id", operatorId);
+            operator.put("concreteLocation", operators.get(operatorId).getConcreteLocation().toString());
+            operator.put("operatorStatus", operators.get(operatorId).getStatus().toString().toLowerCase());
+            operator.put("subclass", operators.get(operatorId).getSubclass().toString().toUpperCase());
+            operatorsList.add(operator);
+        }
+
+        result.put("operators", operatorsList);
+
+        List<HashMap<Object, Object>> splitOperatorsList = new ArrayList<>();
+
+        Map<String, List<String>> splitOperatorIds = poh.getAlternativePaths();
+
+
+        for(String operatorId : splitOperatorIds.keySet()) {
+            HashMap<Object, Object> splitOperator = new HashMap<>();
+            splitOperator.put("id", operatorId);
+            splitOperator.put("activePath", splitOperatorIds.get(operatorId).get(0));
+            splitOperator.put("totalPaths", splitOperatorIds.get(operatorId).size());
+            splitOperator.put("failedPaths", -1);
+            splitOperator.put("availablePaths", -1);
+
+            // TODO: replace by querying real values
+
+            splitOperatorsList.add(splitOperator);
+        }
+
+
+        result.put("splitOperators", splitOperatorsList);
+        return result;
+    }
 
 }

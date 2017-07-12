@@ -2,6 +2,7 @@ package net.knasmueller.pathfinder.unit_tests;
 
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.topologyParser.TopologyParser;
+import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
 import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.nexus.INexus;
 import org.junit.Assert;
@@ -51,7 +52,7 @@ public class OperatorManagementTests {
     }
 
     @Test
-    public void test_topologyWithoutSplitJoin_noPathsExtracted() throws IOException {
+    public void test_topologyWithoutSplitJoin_noPathsExtracted() throws IOException, EmptyTopologyException {
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(simpleTopology.getFile().getAbsolutePath()).topology;
         Assert.assertTrue(topology.keySet().contains("source"));
@@ -65,7 +66,7 @@ public class OperatorManagementTests {
     }
 
     @Test
-    public void test_topologyWithSplitJoin_pathIsExtracted() throws IOException {
+    public void test_topologyWithSplitJoin_pathIsExtracted() throws IOException, EmptyTopologyException {
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology.getFile().getAbsolutePath()).topology;
         Assert.assertTrue(topology.keySet().contains("source"));
@@ -84,7 +85,7 @@ public class OperatorManagementTests {
     }
 
     @Test
-    public void test_topologyWith2SplitJoins_2pathsAreExtracted() throws IOException {
+    public void test_topologyWith2SplitJoins_2pathsAreExtracted() throws IOException, EmptyTopologyException {
         Map<String, Operator> topology =
                 topologyParser.parseTopologyFromFileSystem(splitJoinTopology2.getFile().getAbsolutePath()).topology;
         Assert.assertTrue(topology.keySet().contains("source"));

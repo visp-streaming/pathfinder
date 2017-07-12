@@ -22,7 +22,7 @@ var updateRuntimes = function () {
     })
         .done(function (data) {
 
-            if (data["instances"].length == 0) {
+            if (data["instances"].length == 0 || data["instances"].length == 0) {
                 showFallbackRuntimes();
                 return;
             }
