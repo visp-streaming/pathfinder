@@ -73,28 +73,28 @@
             <div class="row tile_count">
                 <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
                     <span class="count_top">PathFinder IP</span>
-                    <div class="count">127.0.0.1</div>
+                    <div class="count" id="statistics_ip">-</div>
                 </div>
                 <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
                     <span class="count_top">PathFinder Port</span>
-                    <div class="count">9000</div>
+                    <div class="count" id="statistics_port">-</div>
                 </div>
                 <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
                     <span class="count_top">Total VISP Instances</span>
-                    <div class="count green">3</div>
+                    <div class="count green" id="statistics_instances">-</div>
                 </div>
                 <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
                     <span class="count_top">Database Entries</span>
-                    <div class="count">4,168</div>
+                    <div class="count" id="statistics_dbentries">-</div>
                 </div>
                 <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
                     <span class="count_top">Uptime</span>
-                    <div class="count">21</div>
+                    <div class="count" id="statistics_uptime">-</div>
                     <span class="count_bottom"> hours</span>
                 </div>
                 <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
                     <span class="count_top">Version</span>
-                    <div class="count">0.2.1</div>
+                    <div class="count" id="statistics_version">-</div>
                 </div>
             </div>
             <!-- /top tiles -->
@@ -159,6 +159,9 @@
 
 <!-- Custom Theme Scripts -->
 <script src="js/theme.min.js"></script>
+
+<!-- Custom PathFinder Scripts -->
+<script src="js/home.js"></script>
 
 </body>
 </html>
