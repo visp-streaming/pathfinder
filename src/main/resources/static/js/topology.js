@@ -1,4 +1,5 @@
 var topologyPullInterval = null;
+var cachedDotContent = false;
 
 $(document).ready(function () {
     showFallbackTopology();
@@ -6,8 +7,16 @@ $(document).ready(function () {
     topologyPullInterval = window.setInterval(function () {
         updateTopology();
     }, 10000);
+
 });
 
+
+var renderTopology = function(dotContent) {
+    if(dotContent) {
+        var image = Viz(dotContent, { format: "svg" });
+        document.getElementById("topologyFigure").innerHTML = image;
+    }
+}
 
 var showFallbackTopology = function () {
     $("#topology_content_fallback").show();
@@ -30,6 +39,12 @@ var updateTopology = function () {
                 $("#topology_file_content").html(topologyFileContent);
                 $("#topology_content_fallback").hide();
                 $("#topology_content").show();
+
+                if(data["dotContent"] != cachedDotContent) {
+                    cachedDotContent = data["dotContent"];
+                    console.log(cachedDotContent);
+                    renderTopology(data["dotContent"]);
+                }
 
             }
 

@@ -70,11 +70,14 @@ public class VispCommunicator {
             LOG.error("Invalid endpoint");
         } else {
             vispRuntimeIdentifiers.add(endpoint);
-//            String topology = getTopologyFromVisp(endpoint);
-//            if(!this.getCachedTopologyString().equals(topology)) {
-//                this.setCachedTopologyString(topology);
-//                updateStoredTopology(topology);
-//            }
+            if(vispRuntimeIdentifiers.size() == 1) {
+                // added the first runtime - fetch topology
+//                String topology = getTopologyFromVisp(endpoint);
+//                if(!this.getCachedTopologyString().equals(topology)) {
+//                    this.setCachedTopologyString(topology);
+//                    updateStoredTopology(topology);
+//                }
+            }
 //            LOG.debug("Added endpoint " + endpoint);
         }
     }

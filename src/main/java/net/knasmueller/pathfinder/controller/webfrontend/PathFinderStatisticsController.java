@@ -3,6 +3,7 @@ package net.knasmueller.pathfinder.controller.webfrontend;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
+import net.knasmueller.pathfinder.service.GraphvizService;
 import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.SplitManagement;
 import net.knasmueller.pathfinder.service.VispCommunicator;
@@ -39,6 +40,9 @@ public class PathFinderStatisticsController {
 
     @Autowired
     private SplitManagement spm;
+
+    @Autowired
+    private GraphvizService graphvizService;
 
     private static final Logger LOG = LoggerFactory.getLogger(PathFinderStatisticsController.class);
 
@@ -100,6 +104,8 @@ public class PathFinderStatisticsController {
 
 
         result.put("topology", new String(encodedBytes, "UTF8"));
+
+        result.put("dotContent", graphvizService.getDotFormatForFrontend(vispCommunicator.getVispTopology()));
 
         return result;
     }
