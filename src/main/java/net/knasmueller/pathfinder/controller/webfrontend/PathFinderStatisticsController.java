@@ -156,4 +156,34 @@ public class PathFinderStatisticsController {
         return result;
     }
 
+    @RequestMapping("/getTopologyStabilizationStatistics")
+    public List<HashMap<Object, Object>> getTopologyStabilizationStatistics() {
+        LOG.debug("Call to /getTopologyStabilizationStatistics");
+        List<HashMap<Object, Object>> result = new ArrayList<>();
+
+        {
+            HashMap<Object, Object> hashmap = new HashMap<>();
+
+            hashmap.put("y", "2012-02-24 15:00:00");
+            hashmap.put("a", 100);
+
+
+            result.add(hashmap);
+        }
+        {
+            HashMap<Object, Object> hashmap = new HashMap<>();
+
+            hashmap.put("y", "2012-02-24 15:01:00");
+            hashmap.put("a", 22);
+
+
+            result.add(hashmap);
+        }
+
+
+        return result;
+    }
+
+
+
 }

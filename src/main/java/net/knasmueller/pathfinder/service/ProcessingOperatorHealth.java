@@ -33,8 +33,9 @@ public class ProcessingOperatorHealth {
 
     /**
      * Updates the health status of a specific operator by a string status (working or failed)
+     *
      * @param operatorId string identifier for the operator as used in the topology
-     * @param status the new health status for that operator
+     * @param status     the new health status for that operator
      */
     public void setOperatorStatus(String operatorId, String status) {
         try {
@@ -50,8 +51,9 @@ public class ProcessingOperatorHealth {
 
     /**
      * Updates the health status of a specific operator by a classification object
+     *
      * @param operatorId string identifier for the operator as used in the topology
-     * @param status the new health status for that operator
+     * @param status     the new health status for that operator
      */
     public void setOperatorStatus(String operatorId, INexus.OperatorClassification status) {
         if (status.equals(INexus.OperatorClassification.FAILED)) {
@@ -70,6 +72,7 @@ public class ProcessingOperatorHealth {
 
     /**
      * Updates health status of multiple operators at once
+     *
      * @param newAvailabilities map of (String, Classification) (coming from a classifier)
      */
     public void updateOperatorAvailabilities(Map<String, INexus.OperatorClassification> newAvailabilities) {
@@ -83,6 +86,7 @@ public class ProcessingOperatorHealth {
     /**
      * Iterates over all split operators and determines the recommended output path for each of them
      * Then contacts VISP with a list of switch recommendations
+     *
      * @param newAvailabilities
      */
     public void contactVispWithNewRecommendations(Map<String, INexus.OperatorClassification> newAvailabilities) {
@@ -112,6 +116,7 @@ public class ProcessingOperatorHealth {
 
     /**
      * Returns the main path of a specific split operator
+     *
      * @param splitId the identifier of the split operator
      * @return the main path of that split operator (as defined by the user's pathOrder)
      */
@@ -129,6 +134,7 @@ public class ProcessingOperatorHealth {
 
     /**
      * Returns the split operator's path with the lowest path ranking that is still available
+     *
      * @param splitId
      * @return first operator's id of the best path
      * @throws NoAlternativePathAvailableException
@@ -161,6 +167,7 @@ public class ProcessingOperatorHealth {
 
     /**
      * this function is called when the VISP instance has a new topology. It removes and recreates the local operator topology
+     *
      * @param newTopology
      */
     public void topologyUpdate(Map<String, Operator> newTopology) {
@@ -183,9 +190,12 @@ public class ProcessingOperatorHealth {
     public boolean isOperatorAvailable(String operatorId) {
         try {
             if (!processingOperatorMap.containsKey(operatorId)) {
+                LOG.debug("Could not find operator " + operatorId + "; returning health = failed");
                 return false;
             }
-            return processingOperatorMap.get(operatorId).getStatus().equals(PathfinderOperator.Status.WORKING);
+            boolean operatorWorking = processingOperatorMap.get(operatorId).getStatus().equals(PathfinderOperator.Status.WORKING);
+            LOG.debug("returning health = " + (operatorWorking ? "working" : "failed") + " for operator " + operatorId);
+            return operatorWorking;
         } catch (Exception e) {
             LOG.error("Could not retrieve operator status for operator " + operatorId, e);
             return false;
@@ -202,12 +212,13 @@ public class ProcessingOperatorHealth {
 
     /**
      * this function extracts each split operator with the list of children in the correct order
+     *
      * @param topology
      * @return
      */
     public static Map<String, List<String>> getAlternativePaths(Map<String, Operator> topology) throws EmptyTopologyException {
         Map<String, List<String>> result = new HashMap<>();
-        if(topology == null) {
+        if (topology == null) {
             throw new EmptyTopologyException();
         }
         for (String operatorId : topology.keySet()) {
@@ -223,6 +234,7 @@ public class ProcessingOperatorHealth {
 
     /**
      * Gets all operators that are directly consuming messages of the specified operator
+     *
      * @param topology
      * @param operatorId
      * @return set of downstream operator ids

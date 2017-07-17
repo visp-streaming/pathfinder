@@ -13,6 +13,8 @@
     <link href="css/vendors/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="css/vendors/font-awesome.min.css" rel="stylesheet">
+    <!-- Morris.js -->
+    <link href="css/vendors/morris.css" rel="stylesheet">
     <!-- Custom Theme Style -->
     <link href="css/theme.min.css" rel="stylesheet">
     <link href="css/pathfinder.css" rel="stylesheet">
@@ -246,61 +248,96 @@
                 </div>
             </div>
             <div class="row">
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="x_panel">
-                    <div class="x_title">
-                        <h2>Topology</h2>
-                        <ul class="nav navbar-right panel_toolbox">
-                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
-                                   aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                            </li>
-                            <li><a class="close-link"><i class="fa fa-close"></i></a>
-                            </li>
-                        </ul>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="x_content">
-                        <div id="topologyFigure"></div>
-                        <div style="display: none;" class="x_content" id="topology_content_fallback">
-                            <div class="alert alert-info" role="alert"><strong>No topology info</strong></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Topology</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                       aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                </li>
+                                <li><a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
                         </div>
-                        <div id="topology_content">
-                            <code class="language-vtdl" data-lang="html" id="topology_file_content">
-                            </code>
-                        </div>
+                        <div class="x_content">
+                            <div id="topologyFigure"></div>
+                            <div style="display: none;" class="x_content" id="topology_content_fallback">
+                                <div class="alert alert-info" role="alert"><strong>No topology info</strong></div>
+                            </div>
+                            <div id="topology_content">
+                                <code class="language-vtdl" data-lang="html" id="topology_file_content">
+                                </code>
+                            </div>
 
 
+                        </div>
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Line Graph <small>Sessions</small></h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li><a href="#">Settings 1</a>
+                                        </li>
+                                        <li><a href="#">Settings 2</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content2">
+                            <div id="topology_stabilization_graph" style="width:100%; height:300px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+
+
         </div>
+        <!-- /page content -->
 
-        <br/>
-
-
+        <!-- footer content -->
+        <footer>
+            <div class="pull-right">
+                PathFinder
+            </div>
+            <div class="clearfix"></div>
+        </footer>
+        <!-- /footer content -->
     </div>
-    <!-- /page content -->
-
-    <!-- footer content -->
-    <footer>
-        <div class="pull-right">
-            PathFinder
-        </div>
-        <div class="clearfix"></div>
-    </footer>
-    <!-- /footer content -->
-</div>
 </div>
 
 <!-- jQuery -->
 <script src="js/vendors/jquery.min.js"></script>
 <!-- Bootstrap -->
 <script src="js/vendors/bootstrap.min.js"></script>
+
+
+<!-- Raphael.js -->
+<script src="js/vendors/raphael.min.js"></script>
+
+<!-- Morris.js -->
+<script src="js/vendors/morris.min.js"></script>
 
 <!-- Custom Theme Scripts -->
 <script src="js/theme.min.js"></script>
@@ -320,5 +357,7 @@
 <!-- Fetch operator data -->
 <script src="js/operators.js"></script>
 
+<!-- code for plotting topology stabliziation over time -->
+<script src="js/topology_stabilization_graph.js"></script>
 </body>
 </html>
