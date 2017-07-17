@@ -3,17 +3,21 @@ package net.knasmueller.pathfinder.service;
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
+import net.knasmueller.pathfinder.entities.TopologyStability;
 import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
 import net.knasmueller.pathfinder.exceptions.NoAlternativePathAvailableException;
 import net.knasmueller.pathfinder.exceptions.OperatorNotFoundException;
+import net.knasmueller.pathfinder.repository.TopologyStabilityRepository;
 import net.knasmueller.pathfinder.service.nexus.INexus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * A service that keeps track of each processing node's health
@@ -25,6 +29,9 @@ public class ProcessingOperatorHealth {
 
     @Autowired
     private VispCommunicator vispCommunicator;
+
+    @Autowired
+    private TopologyStabilityRepository tsr;
 
     /**
      * Similar to a topology, this map stores a PathFinderOperator object for each operator id
@@ -259,5 +266,23 @@ public class ProcessingOperatorHealth {
             }
         }
         return result;
+    }
+
+    public void updateTopologyStability() {
+        // called by Scheduler
+
+        String topologyHash = null;
+        try {
+            topologyHash = vispCommunicator.getVispTopology().getHash();
+        } catch (EmptyTopologyException e) {
+            return;
+        }
+
+        TopologyStability ts = new TopologyStability(topologyHash, ThreadLocalRandom.current().nextDouble(0, 1.0));
+        tsr.save(ts);
+    }
+
+    public List<TopologyStability> getStabilityTop10(String topologyHash) {
+        return tsr.findAllTop20ByTopologyHashOrderByTimestamp(topologyHash, new PageRequest(0, 10));
     }
 }

@@ -1,5 +1,6 @@
 package net.knasmueller.pathfinder.service;
 
+import net.knasmueller.pathfinder.entities.TopologyStability;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
 import org.slf4j.Logger;
@@ -19,6 +20,9 @@ public class Scheduler {
     private static final Logger LOG = LoggerFactory.getLogger(Scheduler.class);
     @Autowired
     VispCommunicator vispCommunicator;
+
+    @Autowired
+    ProcessingOperatorHealth poh;
 
     /**
      * Queries all currently known VISP runtimes and asks for up-to-date statistics
@@ -40,6 +44,12 @@ public class Scheduler {
             LOG.debug("No VISP instances to query");
         }
     }
+
+    @Scheduled(fixedRate = 15000)
+    public void updateTopologyStability() {
+        poh.updateTopologyStability();
+    }
+
 
     /**
      * Contacts the first VISP runtime and checks whether the locally stored topology is still the same as the one

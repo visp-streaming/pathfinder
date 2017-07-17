@@ -65,4 +65,11 @@ public class VispTopology {
             return this.getTopology().get(id);
         }
     }
+
+    public String getHash() throws EmptyTopologyException {
+        if(this.getTopology() == null || this.getTopology().size() == 0) {
+            throw new EmptyTopologyException("Topology is empty");
+        }
+        return "T" + topology.hashCode();
+    }
 }

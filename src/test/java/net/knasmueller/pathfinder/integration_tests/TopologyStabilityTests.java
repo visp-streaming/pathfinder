@@ -2,6 +2,7 @@ package net.knasmueller.pathfinder.integration_tests;
 
 import net.knasmueller.pathfinder.entities.TopologyStability;
 import net.knasmueller.pathfinder.repository.TopologyStabilityRepository;
+import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +24,9 @@ public class TopologyStabilityTests {
     @Autowired
     TopologyStabilityRepository tsr;
 
+    @Autowired
+    ProcessingOperatorHealth poh;
+
     @Before
     public void init() {
 
@@ -34,7 +38,7 @@ public class TopologyStabilityTests {
         tsr.save(ts);
 
 
-        Assert.assertTrue(tsr.findAllByTopologyHash("1517af127").get(0).getStability() - 0.9 < 0.0001);
+        Assert.assertTrue(poh.getStabilityTop10("1517af127").get(0).getStability() - 0.9 < 0.0001);
     }
 
 

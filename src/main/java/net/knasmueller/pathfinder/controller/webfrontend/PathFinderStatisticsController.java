@@ -1,8 +1,11 @@
 package net.knasmueller.pathfinder.controller.webfrontend;
 
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
+import net.knasmueller.pathfinder.entities.TopologyStability;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
+import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
 import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
+import net.knasmueller.pathfinder.repository.TopologyStabilityRepository;
 import net.knasmueller.pathfinder.service.GraphvizService;
 import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.SplitManagement;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +47,9 @@ public class PathFinderStatisticsController {
 
     @Autowired
     private GraphvizService graphvizService;
+
+    @Autowired
+    private TopologyStabilityRepository tsr;
 
     private static final Logger LOG = LoggerFactory.getLogger(PathFinderStatisticsController.class);
 
@@ -82,7 +89,7 @@ public class PathFinderStatisticsController {
         List<VispRuntimeIdentifier> vispRuntimes = vispCommunicator.getVispRuntimeIdentifiers();
 
         int counter = 1;
-        for(VispRuntimeIdentifier rti : vispRuntimes) {
+        for (VispRuntimeIdentifier rti : vispRuntimes) {
             HashMap<Object, Object> instance = new HashMap<>();
             instance.put("id", counter++);
             instance.put("ip", rti.getIp());
@@ -119,8 +126,8 @@ public class PathFinderStatisticsController {
 
         HashMap<String, PathfinderOperator> operators = poh.getOperators();
 
-        for(String operatorId : operators.keySet()) {
-            if(operators.get(operatorId).getSubclass().equals(PathfinderOperator.Subclass.SPLIT) || operators.get(operatorId).getSubclass().equals(PathfinderOperator.Subclass.JOIN)) {
+        for (String operatorId : operators.keySet()) {
+            if (operators.get(operatorId).getSubclass().equals(PathfinderOperator.Subclass.SPLIT) || operators.get(operatorId).getSubclass().equals(PathfinderOperator.Subclass.JOIN)) {
                 continue;
             }
             HashMap<Object, Object> operator = new HashMap<>();
@@ -138,7 +145,7 @@ public class PathFinderStatisticsController {
         Map<String, List<String>> splitOperatorIds = poh.getAlternativePaths();
 
 
-        for(String operatorId : splitOperatorIds.keySet()) {
+        for (String operatorId : splitOperatorIds.keySet()) {
             HashMap<Object, Object> splitOperator = new HashMap<>();
             splitOperator.put("id", operatorId);
             splitOperator.put("activePath", splitOperatorIds.get(operatorId).get(0));
@@ -161,20 +168,22 @@ public class PathFinderStatisticsController {
         LOG.debug("Call to /getTopologyStabilizationStatistics");
         List<HashMap<Object, Object>> result = new ArrayList<>();
 
-        {
-            HashMap<Object, Object> hashmap = new HashMap<>();
-
-            hashmap.put("y", "2012-02-24 15:00:00");
-            hashmap.put("a", 100);
-
-
-            result.add(hashmap);
+        String topologyHash = null;
+        try {
+            topologyHash = vispCommunicator.getVispTopology().getHash();
+        } catch (EmptyTopologyException e) {
+            return result;
         }
-        {
+
+        List<TopologyStability> stabilityList = poh.getStabilityTop10(topologyHash);
+
+        for (TopologyStability stabilityValue : stabilityList) {
             HashMap<Object, Object> hashmap = new HashMap<>();
 
-            hashmap.put("y", "2012-02-24 15:01:00");
-            hashmap.put("a", 22);
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(stabilityValue.getTimestamp());
+
+            hashmap.put("y", timestamp);
+            hashmap.put("a", stabilityValue.getStability());
 
 
             result.add(hashmap);
@@ -183,7 +192,6 @@ public class PathFinderStatisticsController {
 
         return result;
     }
-
 
 
 }

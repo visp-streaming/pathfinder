@@ -37,7 +37,7 @@ public class GraphvizService {
         }
 
         for (String operatorId : topologyMap.keySet()) {
-            resultString += "\"" + operatorId + "\"" + "[style=filled, fontname=\"helvetica\", shape=box, fillcolor=\"" + getColor(operatorId, topologyMap) + "\", label=<<FONT POINT-SIZE=\"10\">" + operatorId + "</FONT><BR />\n" +
+            resultString += "\"" + operatorId + "\"" + "[style=filled, fontname=\"helvetica\", shape=box, fillcolor=\"" + getColor(operatorId, topologyMap) + "\", label=<<FONT POINT-SIZE=\"12\">" + operatorId + "</FONT><BR />\n" +
                     "<FONT POINT-SIZE=\"8\">" + getSubtitle(operatorId, topologyMap) + "</FONT>>]" + "\n";
         }
 
