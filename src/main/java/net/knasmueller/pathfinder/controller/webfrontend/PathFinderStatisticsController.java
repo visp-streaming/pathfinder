@@ -60,7 +60,6 @@ public class PathFinderStatisticsController {
 
     @RequestMapping("/getStatistics")
     public HashMap<Object, Object> getStatistics() {
-        LOG.debug("Call to /getStatistics");
         HashMap<Object, Object> result = new HashMap<>();
 
         RuntimeMXBean rb = ManagementFactory.getRuntimeMXBean();
@@ -86,7 +85,6 @@ public class PathFinderStatisticsController {
 
     @RequestMapping("/getRuntimeData")
     public HashMap<Object, Object> getRuntimedata() {
-        LOG.debug("Call to /getRuntimedata");
         HashMap<Object, Object> result = new HashMap<>();
 
         List<HashMap<Object, Object>> instancesList = new ArrayList<>();
@@ -109,7 +107,6 @@ public class PathFinderStatisticsController {
 
     @RequestMapping("/getTopology")
     public HashMap<Object, Object> getTopology() throws UnsupportedEncodingException {
-        LOG.debug("Call to /getTopology");
         HashMap<Object, Object> result = new HashMap<>();
 
         byte[] encodedBytes = Base64.getEncoder().encode(vispCommunicator.getCachedTopologyString().getBytes());
@@ -124,7 +121,6 @@ public class PathFinderStatisticsController {
 
     @RequestMapping("/getOperators")
     public HashMap<Object, Object> getOperators() {
-        LOG.debug("Call to /getOperators");
         HashMap<Object, Object> result = new HashMap<>();
 
         List<HashMap<Object, Object>> operatorsList = new ArrayList<>();
@@ -170,7 +166,6 @@ public class PathFinderStatisticsController {
 
     @RequestMapping("/getTopologyStabilizationStatistics")
     public List<HashMap<Object, Object>> getTopologyStabilizationStatistics() {
-        LOG.debug("Call to /getTopologyStabilizationStatistics");
         List<HashMap<Object, Object>> result = new ArrayList<>();
 
         String topologyHash = null;
@@ -200,7 +195,6 @@ public class PathFinderStatisticsController {
 
     @RequestMapping("/getSplitOperatorDetails")
     public HashMap<Object, Object> getSplitOperatorDetails(@RequestParam(value = "operatorId") String operatorId) throws UnsupportedEncodingException {
-        LOG.debug("Call to /getSplitOperatorDetails");
         HashMap<Object, Object> result = new HashMap<>();
 
         List<String> paths = sds.getAlternativePaths().get(operatorId);
