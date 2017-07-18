@@ -1,5 +1,6 @@
 package net.knasmueller.pathfinder.service;
 
+import ac.at.tuwien.infosys.visp.common.operators.Join;
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
@@ -278,8 +279,75 @@ public class ProcessingOperatorHealth {
             return;
         }
 
-        TopologyStability ts = new TopologyStability(topologyHash, ThreadLocalRandom.current().nextDouble(0, 1.0));
+        TopologyStability ts = new TopologyStability(topologyHash, getCurrentTopologyStability());
         tsr.save(ts);
+    }
+
+    private double getCurrentTopologyStability() {
+        if (this.getAlternativePaths().size() == 0) {
+            return 1.0; // no fallback paths at all
+        }
+        double stability = 0.0;
+        int counter = 0;
+        for (String splitId : this.getAlternativePaths().keySet()) {
+            double currentStability = 0.0;
+            counter++;
+
+            List<String> outgoingPaths = this.getAlternativePaths().get(splitId);
+            int availablePaths = 0;
+            for (String path : outgoingPaths) {
+                if (this.isPathAvailable(path)) {
+                    availablePaths++;
+                }
+            }
+            currentStability = ((double) availablePaths) / outgoingPaths.size();
+            stability += currentStability;
+        }
+        return stability / counter;
+    }
+
+    /**
+     * Checks whether a path is available in the current topology
+     *
+     * @param path operator ID of the first operator in the path; last operator is the one before the join node
+     * @return True if all operators along that path are working, false otherwise
+     */
+    private boolean isPathAvailable(String path) {
+        Set<String> idsToCheck = new HashSet<>();
+        Queue<String> idsToVisit = new LinkedList<>();
+        idsToVisit.add(path);
+        Operator currentOperator;
+
+        while (true) {
+            if (idsToVisit.isEmpty()) {
+                break;
+            }
+            currentOperator = this.vispCommunicator.getVispTopology().getTopology().get(idsToVisit.poll());
+            if (!idsToCheck.contains(currentOperator.getName())) {
+                idsToCheck.add(currentOperator.getName());
+            }
+            Set<String> nextOperators = getDownstreamOperators(this.vispCommunicator.getVispTopology().getTopology(), currentOperator.getName());
+            if (nextOperators.isEmpty()) {
+                continue;
+            }
+            for (String op : nextOperators) {
+                if (this.vispCommunicator.getVispTopology().getTopology().get(op) instanceof Join) {
+                    continue;
+                } else {
+                    idsToVisit.add(op);
+                }
+
+            }
+
+        }
+
+        // now check if each operator is available
+        boolean pathIsAvailable = true;
+        for (String operatorToCheck : idsToCheck) {
+            pathIsAvailable &= isOperatorAvailable(operatorToCheck);
+        }
+
+        return pathIsAvailable;
     }
 
     public List<TopologyStability> getStabilityTop10(String topologyHash) {

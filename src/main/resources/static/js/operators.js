@@ -1,11 +1,83 @@
 var operatorPullInterval = null;
 
+var showSplitOperatorInfoFallback = function() {
+    $("#operatorDetailsContent").hide();
+    $("#operatorDetailsContentFallback").show();
+}
+
+var currentDetailViewOperatorId = null;
+
+var updateOperatorView = function() {
+    // called from reload button in view
+
+    if(currentDetailViewOperatorId == null) {
+        return;
+    } else {
+        showSplitOperatorInfo(currentDetailViewOperatorId);
+    }
+
+};
+
+var colorCircuitStatus = function(value) {
+    if(value == "open") {
+        return "<span class=\"label label-danger\">OPEN</span>";
+    } else if(value == "closed") {
+        return "<span class=\"label label-success\">CLOSED</span>";
+    } else {
+        return "<span class=\"label label-default\">" + value + "</span>";
+    }
+}
+
+var showSplitOperatorInfo = function(operatorId) {
+    currentDetailViewOperatorId = operatorId;
+    console.log("operatorId: " + operatorId);
+    $.ajax({
+        type: "get", //send it through get method
+        data: {
+            operatorId: operatorId
+        },
+        url: "/webfrontend/getSplitOperatorDetails"
+    })
+        .done(function (data) {
+
+            if (!data) {
+                showSplitOperatorInfoFallback();
+                return;
+            }
+
+            var inHTML = "";
+
+            $.each(data.circuitBreakerStatus, function (index, value) {
+                var newItem = "<tr>" +
+                    "                                    <th scope=\"row\">" + index + "</th>" +
+                    "                                    <td>" + colorCircuitStatus(value) + "</td>" +
+                    "                                    <td><button type=\"button\"" +
+                    " class=\"btn btn-xs btn-primary\">Info</button> <button type=\"button\" class=\"btn " +
+                    "btn-xs btn-danger\" onclick='todo(\"" + value + "\")'>Todo</button></td>\n" +
+                    "                                </tr>";
+                inHTML += newItem;
+            });
+
+
+
+            $("#operator_details_content_table").html(inHTML);
+
+            $("#operatorDetailsContentFallback").hide();
+            $("#operatorDetailsContent").show();
+
+        })
+        .fail(function () {
+            console.log("Could not reach pathFinder backend");
+            showSplitOperatorInfoFallback();
+        });
+}
+
 $(document).ready(function () {
     showFallbackOperators();
     updateOperators();
     operatorPullInterval = window.setInterval(function () {
         updateOperators();
-    }, 10000);
+    }, GLOBAL_POLL_INTERVAL);
 });
 
 

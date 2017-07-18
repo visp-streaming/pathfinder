@@ -19,7 +19,7 @@ $(document).ready(function () {
     updateStatistics();
     topologyStabilizationInterval = window.setInterval(function () {
         updateTopologyStabilizationStatistics();
-    }, 10000);
+    }, GLOBAL_POLL_INTERVAL);
 });
 
 var updateTopologyStabilizationStatistics = function () {

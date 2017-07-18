@@ -5,7 +5,7 @@ $(document).ready(function () {
     updateRuntimes();
     runtimePullInterval = window.setInterval(function () {
         updateRuntimes();
-    }, 10000);
+    }, GLOBAL_POLL_INTERVAL);
 });
 
 

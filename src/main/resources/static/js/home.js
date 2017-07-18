@@ -1,3 +1,6 @@
+
+var GLOBAL_POLL_INTERVAL = 2000;
+
 var totalVispInstances = 0;
 
 var pullInterval = null;
@@ -13,7 +16,7 @@ $(document).ready(function () {
     updateStatistics();
     pullInterval = window.setInterval(function () {
         updateStatistics();
-    }, 10000);
+    }, GLOBAL_POLL_INTERVAL);
 });
 
 var updateStatistics = function () {

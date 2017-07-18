@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.UnsupportedEncodingException;
@@ -22,6 +23,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 
@@ -189,6 +191,30 @@ public class PathFinderStatisticsController {
             result.add(hashmap);
         }
 
+
+        return result;
+    }
+
+    @RequestMapping("/getSplitOperatorDetails")
+    public HashMap<Object, Object> getSplitOperatorDetails(@RequestParam(value = "operatorId") String operatorId) throws UnsupportedEncodingException {
+        LOG.debug("Call to /getSplitOperatorDetails");
+        HashMap<Object, Object> result = new HashMap<>();
+
+        List<String> paths = poh.getAlternativePaths().get(operatorId);
+
+        if(paths == null || paths.isEmpty()) {
+            return result;
+        }
+
+        HashMap<String, String> circuitBreakerStatus = new HashMap<>();
+
+        for(String s : paths) {
+            circuitBreakerStatus.put(s, ThreadLocalRandom.current().nextInt(0, 2) == 0 ? "closed" : "open");
+        }
+
+
+        result.put("paths", paths);
+        result.put("circuitBreakerStatus", circuitBreakerStatus);
 
         return result;
     }

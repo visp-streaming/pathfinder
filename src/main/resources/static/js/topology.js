@@ -6,7 +6,7 @@ $(document).ready(function () {
     updateTopology();
     topologyPullInterval = window.setInterval(function () {
         updateTopology();
-    }, 10000);
+    }, GLOBAL_POLL_INTERVAL);
 
 });
 
@@ -42,7 +42,6 @@ var updateTopology = function () {
 
                 if(data["dotContent"] != cachedDotContent) {
                     cachedDotContent = data["dotContent"];
-                    console.log(cachedDotContent);
                     renderTopology(data["dotContent"]);
                 }
 
