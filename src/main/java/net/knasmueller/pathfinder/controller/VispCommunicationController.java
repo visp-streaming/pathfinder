@@ -6,6 +6,7 @@ import net.knasmueller.pathfinder.service.VispCommunicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,7 +23,7 @@ public class VispCommunicationController {
      */
     private static final Logger LOG = LoggerFactory.getLogger(VispCommunicationController.class);
 
-    @Autowired
+    @Autowired @Lazy // TODO: rethink design, remove circular dependency
     private VispCommunicator vispCommunicator;
 
     @RequestMapping("/addVispRuntime")

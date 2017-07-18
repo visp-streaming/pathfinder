@@ -1,12 +1,26 @@
 package net.knasmueller.pathfinder.entities;
 
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
 /**
  * Uniquely identifies a VISP runtime by IP and port
  */
+@Entity
 public class VispRuntimeIdentifier {
     String ip;
     int port;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+
+    public VispRuntimeIdentifier() {
+
+    }
 
     public VispRuntimeIdentifier(String ip, int port) {
         this.ip = ip;

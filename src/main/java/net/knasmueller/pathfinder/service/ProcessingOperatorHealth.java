@@ -2,6 +2,7 @@ package net.knasmueller.pathfinder.service;
 
 import ac.at.tuwien.infosys.visp.common.operators.Join;
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
+import ac.at.tuwien.infosys.visp.common.operators.ProcessingOperator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.TopologyStability;
@@ -13,6 +14,7 @@ import net.knasmueller.pathfinder.service.nexus.INexus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
@@ -27,10 +29,10 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ProcessingOperatorHealth {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorHealth.class);
 
-    @Autowired
+    @Autowired @Lazy // TODO: rethink design, remove circular dependency on vispCommunicator
     private VispCommunicator vispCommunicator;
 
-    @Autowired
+    @Autowired @Lazy // TODO: rethink design, remove circular dependency
     private SplitDecisionService sds;
 
 
@@ -207,4 +209,37 @@ public class ProcessingOperatorHealth {
     }
 
 
+    /**
+     * Automatically invoked after new up-to-date statistics have been fetched
+     */
+    public void postStatisticsUpdate() {
+        // TODO: parse statistics here, use Nexus to update operator availabilities
+
+        // dummy code until that happens:
+
+        for(String p : getProcessingOperatorIds()) {
+            if(getOperatorStatus(p).equals(PathfinderOperator.Status.WORKING)) {
+                if(ThreadLocalRandom.current().nextInt(0, 5) > 4) {
+                    setOperatorStatus(p, "failed");
+                }
+            } else {
+                if(ThreadLocalRandom.current().nextInt(0, 5) > 2) {
+                    setOperatorStatus(p, "working");
+                }
+            }
+
+        }
+    }
+
+    private Set<String> getProcessingOperatorIds() {
+        Set<String> resultSet = new HashSet<>();
+
+        for(String s : getOperators().keySet()) {
+            if(vispCommunicator.getVispTopology().topology.get(s) instanceof ProcessingOperator) {
+                resultSet.add(s);
+            }
+        }
+
+        return resultSet;
+    }
 }

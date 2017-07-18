@@ -6,6 +6,7 @@ import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatistic
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -18,20 +19,20 @@ import java.util.List;
 @Component
 public class Scheduler {
     private static final Logger LOG = LoggerFactory.getLogger(Scheduler.class);
-    @Autowired
+    @Autowired @Lazy // TODO: rethink design, remove circular dependency
     VispCommunicator vispCommunicator;
 
     @Autowired
     ProcessingOperatorHealth poh;
 
-    @Autowired
+    @Autowired @Lazy // TODO: rethink design, remove circular dependency
     SplitDecisionService sds;
 
     /**
      * Queries all currently known VISP runtimes and asks for up-to-date statistics
      * Statistics are then persisted to a database
      */
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 15000)
     public void getStatisticsFromAllRuntimes() {
         maybePullTopologyUpdate();
 
@@ -43,11 +44,15 @@ public class Scheduler {
                 OperatorStatisticsResponse response = vispCommunicator.getStatisticsFromVisp(rt);
                 vispCommunicator.persistStatisticEntries(response);
             }
+            poh.postStatisticsUpdate();
         } else {
             LOG.debug("No VISP instances to query");
         }
     }
 
+    /**
+     * Compute topology stability metrics and write to database
+     */
     @Scheduled(fixedDelay = 15000)
     public void updateTopologyStability() {
         sds.updateTopologyStability();
@@ -75,6 +80,9 @@ public class Scheduler {
         }
     }
 
+    /**
+     * Checks whether any operator availabilities have changed and initiate circuitBreaker transitions accordingly
+     */
     @Scheduled(fixedDelay = 1000)
     public void updateCircuits() {
         sds.updateCircuits();

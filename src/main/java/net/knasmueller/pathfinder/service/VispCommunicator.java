@@ -9,6 +9,7 @@ import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatistic
 import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
 import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
 import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
+import net.knasmueller.pathfinder.repository.VispRuntimeIdentifierRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,6 @@ import java.util.*;
 public class VispCommunicator {
     private static final Logger LOG = LoggerFactory.getLogger(VispCommunicator.class);
 
-    List<VispRuntimeIdentifier> vispRuntimeIdentifiers = new ArrayList<>();
-
     @Autowired
     VispTopology vispTopology;
 
@@ -40,6 +39,9 @@ public class VispCommunicator {
 
     @Autowired
     SplitDecisionService sds;
+
+    @Autowired
+    VispRuntimeIdentifierRepository vriRepo;
 
     /**
      * The current VISP topology file as a string
@@ -72,15 +74,23 @@ public class VispCommunicator {
         if (endpoint == null || "".equals(endpoint)) {
             LOG.error("Invalid endpoint");
         } else {
-            vispRuntimeIdentifiers.add(endpoint);
-            if(vispRuntimeIdentifiers.size() == 1) {
+            List<VispRuntimeIdentifier> knownIdentifiers = vriRepo.findAll();
+            for(VispRuntimeIdentifier i : knownIdentifiers) {
+                if(i.getIp().equals(endpoint.getIp()) && i.getPort() == endpoint.getPort()) {
+                    LOG.warn("Did not add new VISP runtime; is already known to repository");
+                    return;
+                }
+            }
+
+            vriRepo.save(endpoint);
+//            if(vispRuntimeIdentifiers.size() == 1) {
                 // added the first runtime - fetch topology
 //                String topology = getTopologyFromVisp(endpoint);
 //                if(!this.getCachedTopologyString().equals(topology)) {
 //                    this.setCachedTopologyString(topology);
 //                    updateStoredTopology(topology);
 //                }
-            }
+//            }
 //            LOG.debug("Added endpoint " + endpoint);
         }
     }
@@ -89,14 +99,15 @@ public class VispCommunicator {
         if (endpoint == null || "".equals(endpoint)) {
             LOG.error("Invalid endpoint");
         } else {
-            vispRuntimeIdentifiers.remove(endpoint);
+            //vispRuntimeIdentifiers.remove(endpoint);
+            vriRepo.deleteByIpAndPort(endpoint.getIp(), endpoint.getPort());
         }
         LOG.debug("Removed endpoint " + endpoint);
     }
 
 
     public List<VispRuntimeIdentifier> getVispRuntimeIdentifiers() {
-        return vispRuntimeIdentifiers;
+        return vriRepo.findAll();
     }
 
     /**

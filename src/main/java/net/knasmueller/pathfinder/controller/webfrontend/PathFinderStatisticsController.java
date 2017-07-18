@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +36,7 @@ public class PathFinderStatisticsController {
     @Value("${server.port}")
     String port;
 
-    @Autowired
+    @Autowired @Lazy // TODO: rethink design, remove circular dependency
     private VispCommunicator vispCommunicator;
 
     @Autowired
@@ -45,15 +46,12 @@ public class PathFinderStatisticsController {
     private SingleOperatorStatisticsRepository sosr;
 
     @Autowired
-    private SplitDecisionService spm;
-
-    @Autowired
     private GraphvizService graphvizService;
 
     @Autowired
     private TopologyStabilityRepository tsr;
 
-    @Autowired
+    @Autowired @Lazy // TODO: rethink design, remove circular dependency
     private SplitDecisionService sds;
 
     private static final Logger LOG = LoggerFactory.getLogger(PathFinderStatisticsController.class);
