@@ -149,10 +149,10 @@ public class PathFinderStatisticsController {
         for (String operatorId : splitOperatorIds.keySet()) {
             HashMap<Object, Object> splitOperator = new HashMap<>();
             splitOperator.put("id", operatorId);
-            splitOperator.put("activePath", splitOperatorIds.get(operatorId).get(0));
-            splitOperator.put("totalPaths", splitOperatorIds.get(operatorId).size());
-            splitOperator.put("failedPaths", -1);
-            splitOperator.put("availablePaths", -1);
+            splitOperator.put("activePath", splitOperatorIds.get(operatorId).get(0)); // TODO
+            splitOperator.put("totalPaths", sds.getTotalPaths(operatorId));
+            splitOperator.put("failedPaths", sds.getNumberFailedPaths(operatorId));
+            splitOperator.put("availablePaths", sds.getNumberAvailablePaths(operatorId));
 
             // TODO: replace by querying real values
 
