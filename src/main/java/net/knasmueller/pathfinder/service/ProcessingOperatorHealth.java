@@ -25,14 +25,14 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Service
 public class ProcessingOperatorHealth {
-    // TODO: refactor; some methods belong to SplitManagement
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorHealth.class);
 
     @Autowired
     private VispCommunicator vispCommunicator;
 
     @Autowired
-    private TopologyStabilityRepository tsr;
+    private SplitDecisionService sds;
+
 
     /**
      * Similar to a topology, this map stores a PathFinderOperator object for each operator id
@@ -154,9 +154,7 @@ public class ProcessingOperatorHealth {
             List<String> pathAlternatives = splitOperator.getPathOrder();
 
             for (String currentAlternative : pathAlternatives) {
-                if (getOperatorStatus(currentAlternative).equals(PathfinderOperator.Status.WORKING)) {
-                    //TODO: this is insufficient; the error does not need to be in the first operator, it could also be
-                    // that a downstream operator is failing
+                if (sds.isPathAvailable(currentAlternative)) {
                     return currentAlternative;
                 }
             }
@@ -198,11 +196,9 @@ public class ProcessingOperatorHealth {
     public boolean isOperatorAvailable(String operatorId) {
         try {
             if (!processingOperatorMap.containsKey(operatorId)) {
-                LOG.debug("Could not find operator " + operatorId + "; returning health = failed");
                 return false;
             }
             boolean operatorWorking = processingOperatorMap.get(operatorId).getStatus().equals(PathfinderOperator.Status.WORKING);
-            LOG.debug("returning health = " + (operatorWorking ? "working" : "failed") + " for operator " + operatorId);
             return operatorWorking;
         } catch (Exception e) {
             LOG.error("Could not retrieve operator status for operator " + operatorId, e);
@@ -210,147 +206,5 @@ public class ProcessingOperatorHealth {
         }
     }
 
-    public Map<String, List<String>> getAlternativePaths() {
-        try {
-            return getAlternativePaths(vispCommunicator.getVispTopology().getTopology());
-        } catch (EmptyTopologyException e) {
-            return new HashMap<>();
-        }
-    }
 
-    /**
-     * this function extracts each split operator with the list of children in the correct order
-     *
-     * @param topology
-     * @return
-     */
-    public static Map<String, List<String>> getAlternativePaths(Map<String, Operator> topology) throws EmptyTopologyException {
-        Map<String, List<String>> result = new HashMap<>();
-        if (topology == null) {
-            throw new EmptyTopologyException();
-        }
-        for (String operatorId : topology.keySet()) {
-            if (topology.get(operatorId) instanceof Split) {
-                List<String> splitChildren = new ArrayList<>();
-                splitChildren.addAll(((Split) topology.get(operatorId)).getPathOrder());
-                result.put(operatorId, splitChildren);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Gets all operators that are directly consuming messages of the specified operator
-     *
-     * @param topology
-     * @param operatorId
-     * @return set of downstream operator ids
-     */
-    public static Set<String> getDownstreamOperators(Map<String, Operator> topology, String operatorId) {
-        Set<String> result = new HashSet<>();
-
-        if (topology == null || topology.isEmpty() || operatorId == null || operatorId.equals("")) {
-            return result;
-        }
-
-        for (String o : topology.keySet()) {
-            // check if current operator is child of operatorId
-            List<Operator> sources = topology.get(o).getSources();
-            if (sources == null || sources.size() == 0) {
-                continue;
-            }
-            for (Operator source : sources) {
-                if (source.getName().equals(operatorId)) {
-                    result.add(o);
-                }
-            }
-        }
-        return result;
-    }
-
-    public void updateTopologyStability() {
-        // called by Scheduler
-
-        String topologyHash = null;
-        try {
-            topologyHash = vispCommunicator.getVispTopology().getHash();
-        } catch (EmptyTopologyException e) {
-            return;
-        }
-
-        TopologyStability ts = new TopologyStability(topologyHash, getCurrentTopologyStability());
-        tsr.save(ts);
-    }
-
-    private double getCurrentTopologyStability() {
-        if (this.getAlternativePaths().size() == 0) {
-            return 1.0; // no fallback paths at all
-        }
-        double stability = 0.0;
-        int counter = 0;
-        for (String splitId : this.getAlternativePaths().keySet()) {
-            double currentStability = 0.0;
-            counter++;
-
-            List<String> outgoingPaths = this.getAlternativePaths().get(splitId);
-            int availablePaths = 0;
-            for (String path : outgoingPaths) {
-                if (this.isPathAvailable(path)) {
-                    availablePaths++;
-                }
-            }
-            currentStability = ((double) availablePaths) / outgoingPaths.size();
-            stability += currentStability;
-        }
-        return stability / counter;
-    }
-
-    /**
-     * Checks whether a path is available in the current topology
-     *
-     * @param path operator ID of the first operator in the path; last operator is the one before the join node
-     * @return True if all operators along that path are working, false otherwise
-     */
-    private boolean isPathAvailable(String path) {
-        Set<String> idsToCheck = new HashSet<>();
-        Queue<String> idsToVisit = new LinkedList<>();
-        idsToVisit.add(path);
-        Operator currentOperator;
-
-        while (true) {
-            if (idsToVisit.isEmpty()) {
-                break;
-            }
-            currentOperator = this.vispCommunicator.getVispTopology().getTopology().get(idsToVisit.poll());
-            if (!idsToCheck.contains(currentOperator.getName())) {
-                idsToCheck.add(currentOperator.getName());
-            }
-            Set<String> nextOperators = getDownstreamOperators(this.vispCommunicator.getVispTopology().getTopology(), currentOperator.getName());
-            if (nextOperators.isEmpty()) {
-                continue;
-            }
-            for (String op : nextOperators) {
-                if (this.vispCommunicator.getVispTopology().getTopology().get(op) instanceof Join) {
-                    continue;
-                } else {
-                    idsToVisit.add(op);
-                }
-
-            }
-
-        }
-
-        // now check if each operator is available
-        boolean pathIsAvailable = true;
-        for (String operatorToCheck : idsToCheck) {
-            pathIsAvailable &= isOperatorAvailable(operatorToCheck);
-        }
-
-        return pathIsAvailable;
-    }
-
-    public List<TopologyStability> getStabilityTop10(String topologyHash) {
-        return tsr.findAllTop20ByTopologyHashOrderByTimestamp(topologyHash, new PageRequest(0, 10));
-    }
 }

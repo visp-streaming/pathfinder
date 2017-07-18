@@ -8,7 +8,7 @@ import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
 import net.knasmueller.pathfinder.repository.TopologyStabilityRepository;
 import net.knasmueller.pathfinder.service.GraphvizService;
 import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
-import net.knasmueller.pathfinder.service.SplitManagement;
+import net.knasmueller.pathfinder.service.SplitDecisionService;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,13 +45,16 @@ public class PathFinderStatisticsController {
     private SingleOperatorStatisticsRepository sosr;
 
     @Autowired
-    private SplitManagement spm;
+    private SplitDecisionService spm;
 
     @Autowired
     private GraphvizService graphvizService;
 
     @Autowired
     private TopologyStabilityRepository tsr;
+
+    @Autowired
+    private SplitDecisionService sds;
 
     private static final Logger LOG = LoggerFactory.getLogger(PathFinderStatisticsController.class);
 
@@ -144,7 +147,7 @@ public class PathFinderStatisticsController {
 
         List<HashMap<Object, Object>> splitOperatorsList = new ArrayList<>();
 
-        Map<String, List<String>> splitOperatorIds = poh.getAlternativePaths();
+        Map<String, List<String>> splitOperatorIds = sds.getAlternativePaths();
 
 
         for (String operatorId : splitOperatorIds.keySet()) {
@@ -177,7 +180,7 @@ public class PathFinderStatisticsController {
             return result;
         }
 
-        List<TopologyStability> stabilityList = poh.getStabilityTop10(topologyHash);
+        List<TopologyStability> stabilityList = sds.getStabilityTop10(topologyHash);
 
         for (TopologyStability stabilityValue : stabilityList) {
             HashMap<Object, Object> hashmap = new HashMap<>();
@@ -200,7 +203,7 @@ public class PathFinderStatisticsController {
         LOG.debug("Call to /getSplitOperatorDetails");
         HashMap<Object, Object> result = new HashMap<>();
 
-        List<String> paths = poh.getAlternativePaths().get(operatorId);
+        List<String> paths = sds.getAlternativePaths().get(operatorId);
 
         if(paths == null || paths.isEmpty()) {
             return result;

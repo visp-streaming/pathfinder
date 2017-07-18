@@ -1,7 +1,7 @@
 package net.knasmueller.pathfinder.integration_tests;
 
 import net.knasmueller.pathfinder.exceptions.UnknownOperatorException;
-import net.knasmueller.pathfinder.service.SplitManagement;
+import net.knasmueller.pathfinder.service.SplitDecisionService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,20 +22,20 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class SplitManagementTests {
+public class SplitDecisionServiceTests {
     @SpyBean
-    private SplitManagement splitManagement;
+    private SplitDecisionService splitDecisionService;
 
 
 
     @Value("classpath:topologies/split_join.conf")
     private Resource splitJoinTopology;
 
-    private static final Logger LOG = LoggerFactory.getLogger(SplitManagementTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SplitDecisionServiceTests.class);
 
     @Before
     public void setup() throws IOException {
-        splitManagement.clear();
+        splitDecisionService.clear();
 
     }
 
@@ -43,39 +43,39 @@ public class SplitManagementTests {
     @Test
     public void test_allCircuitBreakersClosed_returnsCorrectStatus() {
         List<String> operators = Arrays.asList("step1", "step2", "step3");
-        splitManagement.addSplitOperators(operators);
+        splitDecisionService.addSplitOperators(operators);
 
-        Assert.assertTrue(splitManagement.isClosed("step1"));
-        Assert.assertTrue(splitManagement.isClosed("step2"));
-        Assert.assertTrue(splitManagement.isClosed("step3"));
+        Assert.assertTrue(splitDecisionService.isClosed("step1"));
+        Assert.assertTrue(splitDecisionService.isClosed("step2"));
+        Assert.assertTrue(splitDecisionService.isClosed("step3"));
     }
 
     @Test(expected = UnknownOperatorException.class)
     public void test_emptySplitOperatorSet_exceptionIsThrown() {
-        splitManagement.isClosed("unknown");
+        splitDecisionService.isClosed("unknown");
     }
 
     @Test
     public void test_circuitBreakerStatusIsChanged_changeIsStored() {
-        splitManagement.addSplitOperators(Arrays.asList("step1", "step2", "step3"));
-        splitManagement.open("step1");
+        splitDecisionService.addSplitOperators(Arrays.asList("step1", "step2", "step3"));
+        splitDecisionService.open("step1");
 
-        Assert.assertTrue(splitManagement.isOpen("step1"));
-        Assert.assertFalse(splitManagement.isOpen("step2"));
-        Assert.assertFalse(splitManagement.isOpen("step3"));
+        Assert.assertTrue(splitDecisionService.isOpen("step1"));
+        Assert.assertFalse(splitDecisionService.isOpen("step2"));
+        Assert.assertFalse(splitDecisionService.isOpen("step3"));
     }
 
     @Test
     public void test_changeMultiple_changeIsStored() {
-        splitManagement.addSplitOperators(Arrays.asList("step1", "step2", "step3"));
-        splitManagement.open("step1");
-        splitManagement.open("step2");
-        splitManagement.open("step3");
-        splitManagement.close("step3");
+        splitDecisionService.addSplitOperators(Arrays.asList("step1", "step2", "step3"));
+        splitDecisionService.open("step1");
+        splitDecisionService.open("step2");
+        splitDecisionService.open("step3");
+        splitDecisionService.close("step3");
 
-        Assert.assertTrue(splitManagement.isOpen("step1"));
-        Assert.assertTrue(splitManagement.isOpen("step2"));
-        Assert.assertFalse(splitManagement.isOpen("step3"));
+        Assert.assertTrue(splitDecisionService.isOpen("step1"));
+        Assert.assertTrue(splitDecisionService.isOpen("step2"));
+        Assert.assertFalse(splitDecisionService.isOpen("step3"));
     }
 
 

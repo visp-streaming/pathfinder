@@ -24,6 +24,9 @@ public class Scheduler {
     @Autowired
     ProcessingOperatorHealth poh;
 
+    @Autowired
+    SplitDecisionService sds;
+
     /**
      * Queries all currently known VISP runtimes and asks for up-to-date statistics
      * Statistics are then persisted to a database
@@ -47,7 +50,7 @@ public class Scheduler {
 
     @Scheduled(fixedRate = 15000)
     public void updateTopologyStability() {
-        poh.updateTopologyStability();
+        sds.updateTopologyStability();
     }
 
 

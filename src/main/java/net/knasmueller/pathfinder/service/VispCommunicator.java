@@ -190,7 +190,7 @@ public class VispCommunicator {
 
         Operator op = topology.getTopology().get(operatorId);
 
-        Set<String> allSplitOperators = ProcessingOperatorHealth.getAlternativePaths(topology.getTopology()).keySet();
+        Set<String> allSplitOperators = SplitDecisionService.getAlternativePaths(topology.getTopology()).keySet();
 
         LOG.info("All split operators: " + String.join(", ", allSplitOperators));
 
@@ -218,7 +218,7 @@ public class VispCommunicator {
                         affectedSplitOperators.add(Pair.of(split, firstChild));
                     }
                 }
-                Set<String> downstreamOperators = ProcessingOperatorHealth.getDownstreamOperators(getVispTopology().getTopology(), currentOp);
+                Set<String> downstreamOperators = SplitDecisionService.getDownstreamOperators(getVispTopology().getTopology(), currentOp);
                 LOG.info("Downstream operators: " + String.join(", ", downstreamOperators));
                 if(downstreamOperators.isEmpty()) {
                     continue;

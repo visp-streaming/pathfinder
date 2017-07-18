@@ -46,7 +46,7 @@ public class VispTopology {
         if(this.getTopology() == null || this.getTopology().size() == 0) {
             throw new EmptyTopologyException("Topology is empty");
         }
-        return ProcessingOperatorHealth.getAlternativePaths(getTopology()).keySet();
+        return SplitDecisionService.getAlternativePaths(getTopology()).keySet();
     }
 
     /**
