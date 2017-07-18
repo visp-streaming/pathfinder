@@ -31,7 +31,7 @@ public class Scheduler {
      * Queries all currently known VISP runtimes and asks for up-to-date statistics
      * Statistics are then persisted to a database
      */
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 30000)
     public void getStatisticsFromAllRuntimes() {
         maybePullTopologyUpdate();
 
@@ -48,7 +48,7 @@ public class Scheduler {
         }
     }
 
-    @Scheduled(fixedRate = 15000)
+    @Scheduled(fixedDelay = 15000)
     public void updateTopologyStability() {
         sds.updateTopologyStability();
     }
@@ -75,4 +75,8 @@ public class Scheduler {
         }
     }
 
+    @Scheduled(fixedDelay = 1000)
+    public void updateCircuits() {
+        sds.updateCircuits();
+    }
 }

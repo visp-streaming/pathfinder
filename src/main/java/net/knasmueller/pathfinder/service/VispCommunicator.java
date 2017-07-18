@@ -38,6 +38,9 @@ public class VispCommunicator {
     @Autowired
     SingleOperatorStatisticsRepository singleOperatorStatisticsRepository;
 
+    @Autowired
+    SplitDecisionService sds;
+
     /**
      * The current VISP topology file as a string
      */
@@ -120,6 +123,7 @@ public class VispCommunicator {
         Map<String, Operator> topology = topologyParser.parseTopologyFromString(newTopology).topology;
         vispTopology.setTopology(topology);
         processingOperatorHealth.topologyUpdate(topology);
+        sds.updateSplitOperatorsFromTopology();
     }
 
     public void clearStoredTopology() {

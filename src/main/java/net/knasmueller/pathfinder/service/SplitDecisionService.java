@@ -52,56 +52,65 @@ public class SplitDecisionService {
      * Initialize circuit breakers for specific list of split operators
      * @param splitOperators set of split operators where a circuit breaker should be created
      */
+    @Deprecated
     public void addSplitOperators(List<String> splitOperators) {
         for(String s : splitOperators) {
             circuitBreakerMap.put(s, new CircuitBreaker());
         }
     }
 
-    public Set<String> getSplitOperatorIds() {
-        return circuitBreakerMap.keySet();
+    public void updateSplitOperatorsFromTopology() {
+        for(String split : getAlternativePaths().keySet()) {
+            for(String path : getAlternativePaths().get(split)) {
+                circuitBreakerMap.put(path, new CircuitBreaker());
+            }
+        }
     }
 
-    public boolean isOpen(String operatorId) {
-        if(!circuitBreakerMap.containsKey(operatorId)) {
-            throw new UnknownOperatorException("Operator with id " + operatorId + " is unknown");
-        }
-        return circuitBreakerMap.get(operatorId).isOpen();
+    public CircuitBreaker getCircuitBreakerOfPath(String pathId) {
+        return circuitBreakerMap.get(pathId);
     }
 
-    public boolean isHalfOpen(String operatorId) {
-        if(!circuitBreakerMap.containsKey(operatorId)) {
-            throw new UnknownOperatorException("Operator with id " + operatorId + " is unknown");
+    public boolean isOpen(String pathId) {
+        if(!circuitBreakerMap.containsKey(pathId)) {
+            throw new UnknownOperatorException("Path with id " + pathId + " is unknown");
         }
-        return circuitBreakerMap.get(operatorId).isHalfOpen();
+        return circuitBreakerMap.get(pathId).isOpen();
     }
 
-    public boolean isClosed(String operatorId) {
-        if(!circuitBreakerMap.containsKey(operatorId)) {
-            throw new UnknownOperatorException("Operator with id " + operatorId + " is unknown");
+    public boolean isHalfOpen(String pathId) {
+        if(!circuitBreakerMap.containsKey(pathId)) {
+            throw new UnknownOperatorException("Path with id " + pathId + " is unknown");
         }
-        return circuitBreakerMap.get(operatorId).isClosed();
+        return circuitBreakerMap.get(pathId).isHalfOpen();
     }
 
-    public void open(String operatorId) {
-        if(!circuitBreakerMap.containsKey(operatorId)) {
-            throw new UnknownOperatorException("Operator with id " + operatorId + " is unknown");
+    public boolean isClosed(String pathId) {
+        if(!circuitBreakerMap.containsKey(pathId)) {
+            throw new UnknownOperatorException("Path with id " + pathId + " is unknown");
         }
-        this.circuitBreakerMap.get(operatorId).open();
+        return circuitBreakerMap.get(pathId).isClosed();
     }
 
-    public void halfOpen(String operatorId) throws InvalidCircuitBreakerTransition {
-        if(!circuitBreakerMap.containsKey(operatorId)) {
-            throw new UnknownOperatorException("Operator with id " + operatorId + " is unknown");
+    public void open(String pathId) {
+        if(!circuitBreakerMap.containsKey(pathId)) {
+            throw new UnknownOperatorException("Path with id " + pathId + " is unknown");
         }
-        this.circuitBreakerMap.get(operatorId).halfOpen();
+        this.circuitBreakerMap.get(pathId).open();
     }
 
-    public void close(String operatorId) {
-        if(!circuitBreakerMap.containsKey(operatorId)) {
-            throw new UnknownOperatorException("Operator with id " + operatorId + " is unknown");
+    public void halfOpen(String pathId) throws InvalidCircuitBreakerTransition {
+        if(!circuitBreakerMap.containsKey(pathId)) {
+            throw new UnknownOperatorException("Path with id " + pathId + " is unknown");
         }
-        this.circuitBreakerMap.get(operatorId).close();
+        this.circuitBreakerMap.get(pathId).halfOpen();
+    }
+
+    public void close(String pathId) {
+        if(!circuitBreakerMap.containsKey(pathId)) {
+            throw new UnknownOperatorException("Path with id " + pathId + " is unknown");
+        }
+        this.circuitBreakerMap.get(pathId).close();
     }
 
     public Map<String, List<String>> getAlternativePaths() {
@@ -261,5 +270,25 @@ public class SplitDecisionService {
     }
 
 
-
+    /**
+     * Called each second by the scheduler; checks each circuit and changes its state if necessary
+     */
+    public void updateCircuits() {
+        // open all paths' circuit breakers where their path has failed operators
+        for(String s : circuitBreakerMap.keySet()) {
+            if(circuitBreakerMap.get(s).isClosed() && !isPathAvailable(s)) {
+                circuitBreakerMap.get(s).open();
+                LOG.debug("Changed path " + s + "'s circuit breaker to OPEN");
+            } else {
+                if(circuitBreakerMap.get(s).isOpen() && isPathAvailable(s)) {
+                    try {
+                        circuitBreakerMap.get(s).halfOpen();
+                        LOG.debug("Changed path " + s + "'s circuit breaker to HALF_OPEN");
+                    } catch (InvalidCircuitBreakerTransition invalidCircuitBreakerTransition) {
+                        LOG.warn("Could not change circuit breaker state", invalidCircuitBreakerTransition);
+                    }
+                }
+            }
+        }
+    }
 }

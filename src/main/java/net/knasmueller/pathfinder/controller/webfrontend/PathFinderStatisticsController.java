@@ -212,7 +212,7 @@ public class PathFinderStatisticsController {
         HashMap<String, String> circuitBreakerStatus = new HashMap<>();
 
         for(String s : paths) {
-            circuitBreakerStatus.put(s, ThreadLocalRandom.current().nextInt(0, 2) == 0 ? "closed" : "open");
+            circuitBreakerStatus.put(s, sds.getCircuitBreakerOfPath(s).toString());
         }
 
 

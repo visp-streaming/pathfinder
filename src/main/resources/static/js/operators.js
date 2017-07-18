@@ -19,9 +19,9 @@ var updateOperatorView = function() {
 };
 
 var colorCircuitStatus = function(value) {
-    if(value == "open") {
+    if(value == "OPEN") {
         return "<span class=\"label label-danger\">OPEN</span>";
-    } else if(value == "closed") {
+    } else if(value == "CLOSED") {
         return "<span class=\"label label-success\">CLOSED</span>";
     } else {
         return "<span class=\"label label-default\">" + value + "</span>";

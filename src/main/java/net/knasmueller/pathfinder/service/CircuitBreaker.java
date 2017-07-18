@@ -58,4 +58,9 @@ public class CircuitBreaker {
     public boolean isClosed() {
         return this.state.equals(State.CLOSED);
     }
+
+    @Override
+    public String toString() {
+        return state.toString().toUpperCase();
+    }
 }
