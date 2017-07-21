@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class Scheduler {
     private static final Logger LOG = LoggerFactory.getLogger(Scheduler.class);
-    @Autowired @Lazy // TODO: rethink design, remove circular dependency
+    @Autowired
     VispCommunicator vispCommunicator;
 
     @Autowired
@@ -75,6 +75,14 @@ public class Scheduler {
             LOG.debug("Updating topology");
             vispCommunicator.setCachedTopologyString(topology);
             vispCommunicator.updateStoredTopology(topology);
+
+            // notify other services about topology change
+            if(vispCommunicator.getVispTopology() != null) {
+                poh.topologyUpdate(vispCommunicator.getVispTopology().topology);
+                sds.updateSplitOperatorsFromTopology();
+            } else {
+                LOG.warn("Received empty topology after update");
+            }
         } else {
             LOG.debug("No topology update necessary");
         }

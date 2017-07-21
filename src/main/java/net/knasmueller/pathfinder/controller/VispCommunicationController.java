@@ -23,7 +23,7 @@ public class VispCommunicationController {
      */
     private static final Logger LOG = LoggerFactory.getLogger(VispCommunicationController.class);
 
-    @Autowired @Lazy // TODO: rethink design, remove circular dependency
+    @Autowired
     private VispCommunicator vispCommunicator;
 
     @RequestMapping("/addVispRuntime")

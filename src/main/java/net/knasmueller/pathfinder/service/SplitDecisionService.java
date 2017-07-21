@@ -34,7 +34,6 @@ public class SplitDecisionService {
     private TopologyStabilityRepository tsr;
 
     @Autowired
-    @Lazy // TODO: rethink design, remove circular dependency
     private VispCommunicator vispCommunicator;
 
     @Autowired

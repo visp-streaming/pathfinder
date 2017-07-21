@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ProcessingOperatorHealth {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingOperatorHealth.class);
 
-    @Autowired @Lazy // TODO: rethink design, remove circular dependency on vispCommunicator
+    @Autowired
     private VispCommunicator vispCommunicator;
 
     @Autowired @Lazy // TODO: rethink design, remove circular dependency

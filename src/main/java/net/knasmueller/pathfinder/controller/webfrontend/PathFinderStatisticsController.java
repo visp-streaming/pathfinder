@@ -36,7 +36,7 @@ public class PathFinderStatisticsController {
     @Value("${server.port}")
     String port;
 
-    @Autowired @Lazy // TODO: rethink design, remove circular dependency
+    @Autowired
     private VispCommunicator vispCommunicator;
 
     @Autowired
