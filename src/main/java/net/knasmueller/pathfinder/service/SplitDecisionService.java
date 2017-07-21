@@ -178,7 +178,7 @@ public class SplitDecisionService {
     /**
      * adds a row to the database describing the current topology's stability
      */
-    public void updateTopologyStability() {
+    public void updateTopologyStability() throws EmptyTopologyException {
         // called by Scheduler
 
         String topologyHash = null;
@@ -197,7 +197,7 @@ public class SplitDecisionService {
      *
      * @return number between 0 and 1; 1 means high stability, 0 means low stability
      */
-    private double getCurrentTopologyStability() {
+    private double getCurrentTopologyStability() throws EmptyTopologyException {
         if (this.getAlternativePaths().size() == 0) {
             return 1.0; // no fallback paths at all
         }
@@ -226,7 +226,7 @@ public class SplitDecisionService {
      * @param path operator ID of the first operator in the path; last operator is the one before the join node
      * @return True if all operators along that path are working, false otherwise
      */
-    public boolean isPathAvailable(String path) {
+    public boolean isPathAvailable(String path) throws EmptyTopologyException {
         Set<String> idsToCheck = new HashSet<>();
         Queue<String> idsToVisit = new LinkedList<>();
         idsToVisit.add(path);
@@ -278,7 +278,7 @@ public class SplitDecisionService {
     /**
      * Called each second by the scheduler; checks each circuit and changes its state if necessary
      */
-    public void updateCircuits() {
+    public void updateCircuits() throws EmptyTopologyException {
         // open all paths' circuit breakers where their path has failed operators
         for (String s : circuitBreakerMap.keySet()) {
             if (circuitBreakerMap.get(s).isClosed() && !isPathAvailable(s)) {
@@ -341,5 +341,60 @@ public class SplitDecisionService {
             LOG.error("Failed to get number of paths for operator " + operatorId, e);
             return 0;
         }
+    }
+
+    /**
+     * This function changes the topology's message flow according to the current circuit breaker statuses
+     */
+    public void updateMessageFlowAfterCircuitBreakerUpdate() throws EmptyTopologyException {
+        LOG.info("TODO - Implement updating message flow");
+
+        // replace this dummy call once VISP has implemented this on its own
+        List<String> paths = new ArrayList<>();
+        for(String s : getAlternativePaths().keySet()) {
+            for(String o : getAlternativePaths().get(s)) {
+                paths.add(o);
+            }
+        }
+        Map<String, String> currentFlows = vispCommunicator.getCurrentMessageFlows(paths);
+
+        // set new flows
+        for (String op : circuitBreakerMap.keySet()) {
+            CircuitBreaker shouldState = circuitBreakerMap.get(op);
+            String isState = currentFlows.get(op);
+
+            if (isState.equals("CLOSED")) {
+                if (shouldState.isOpen()) {
+                    vispCommunicator.stopMessageFlow(getParentSplitOperator(op), op);
+                }
+            } else if (isState.equals("HALF_OPEN")) {
+
+            } else if (isState.equals("OPEN")) {
+                // TODO: continue here
+            }
+        }
+
+    }
+
+    /**
+     * returns the parent split operator if op is part of an alternate path
+     *
+     * @param op
+     * @return
+     */
+    private String getParentSplitOperator(String op) throws EmptyTopologyException {
+        Queue<String> queue = new LinkedList<>();
+        queue.add(op);
+        while (!queue.isEmpty()) {
+            String currentOpId = queue.poll();
+            Operator currentOp = vispCommunicator.getVispTopology().topology.get(currentOpId);
+            if(currentOp instanceof Split) {
+                return currentOpId;
+            }
+            for (Operator s : currentOp.getSources()) {
+                queue.add(s.getName());
+            }
+        }
+        throw new RuntimeException("Could not find suitable operator");
     }
 }

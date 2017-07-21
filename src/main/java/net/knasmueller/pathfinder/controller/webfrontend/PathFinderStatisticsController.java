@@ -112,7 +112,11 @@ public class PathFinderStatisticsController {
 
         result.put("topology", new String(encodedBytes, "UTF8"));
 
-        result.put("dotContent", graphvizService.getDotFormatForFrontend(vispCommunicator.getVispTopology()));
+        try {
+            result.put("dotContent", graphvizService.getDotFormatForFrontend(vispCommunicator.getVispTopology()));
+        } catch (EmptyTopologyException e) {
+            result.put("dotContent", null);
+        }
 
         return result;
     }

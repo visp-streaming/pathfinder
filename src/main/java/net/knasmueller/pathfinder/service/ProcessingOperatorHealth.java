@@ -217,22 +217,26 @@ public class ProcessingOperatorHealth {
         // TODO: parse statistics here, use Nexus to update operator availabilities
 
         // dummy code until that happens:
+        try {
+            for(String p : getProcessingOperatorIds()) {
+                if(getOperatorStatus(p).equals(PathfinderOperator.Status.WORKING)) {
+                    if(ThreadLocalRandom.current().nextInt(0, 5) > 3) {
+                        setOperatorStatus(p, "failed");
+                    }
+                } else {
+                    if(ThreadLocalRandom.current().nextInt(0, 5) > 2) {
+                        setOperatorStatus(p, "working");
+                    }
+                }
 
-        for(String p : getProcessingOperatorIds()) {
-            if(getOperatorStatus(p).equals(PathfinderOperator.Status.WORKING)) {
-                if(ThreadLocalRandom.current().nextInt(0, 5) > 3) {
-                    setOperatorStatus(p, "failed");
-                }
-            } else {
-                if(ThreadLocalRandom.current().nextInt(0, 5) > 2) {
-                    setOperatorStatus(p, "working");
-                }
             }
 
+        } catch(EmptyTopologyException e ) {
+            LOG.warn("Empty topology", e);
         }
     }
 
-    private Set<String> getProcessingOperatorIds() {
+    private Set<String> getProcessingOperatorIds() throws EmptyTopologyException {
         Set<String> resultSet = new HashSet<>();
 
         for(String s : getOperators().keySet()) {

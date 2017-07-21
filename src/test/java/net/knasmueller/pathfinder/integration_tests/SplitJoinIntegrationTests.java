@@ -5,6 +5,7 @@ import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
+import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
 import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
@@ -84,7 +85,7 @@ public class SplitJoinIntegrationTests {
     }
 
     @Test
-    public void test_pathFinderOperatorsHaveCorrectSubclasses() throws IOException {
+    public void test_pathFinderOperatorsHaveCorrectSubclasses() throws IOException, EmptyTopologyException {
         Map<String, Operator> topology = vispCommunicator.getVispTopology().getTopology();
 
         Assert.assertTrue(topology.containsKey("split"));

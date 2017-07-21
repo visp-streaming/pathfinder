@@ -3,6 +3,7 @@ package net.knasmueller.pathfinder.service;
 import net.knasmueller.pathfinder.entities.TopologyStability;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
+import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,9 @@ public class Scheduler {
     @Autowired
     ProcessingOperatorHealth poh;
 
-    @Autowired @Lazy // TODO: rethink design, remove circular dependency
-    SplitDecisionService sds;
+    @Autowired
+    @Lazy // TODO: rethink design, remove circular dependency
+            SplitDecisionService sds;
 
     /**
      * Queries all currently known VISP runtimes and asks for up-to-date statistics
@@ -55,7 +57,10 @@ public class Scheduler {
      */
     @Scheduled(fixedDelay = 15000)
     public void updateTopologyStability() {
-        sds.updateTopologyStability();
+        try {
+            sds.updateTopologyStability();
+        } catch (EmptyTopologyException e) {
+        }
     }
 
 
@@ -64,25 +69,30 @@ public class Scheduler {
      * managed by VISP. If not, update the local one
      */
     public void maybePullTopologyUpdate() {
-        if(vispCommunicator.getVispRuntimeIdentifiers().size() < 1) {
+        if (vispCommunicator.getVispRuntimeIdentifiers().size() < 1) {
             LOG.debug("No known VISP instances - could not grab topology");
             return;
         }
         LOG.debug("maybePullTopologyUpdate()");
         // TODO: do not always contact the first one - either random or vote
         String topology = vispCommunicator.getTopologyFromVisp(vispCommunicator.getVispRuntimeIdentifiers().get(0));
-        if(!vispCommunicator.getCachedTopologyString().equals(topology)) {
+        if (!vispCommunicator.getCachedTopologyString().equals(topology)) {
             LOG.debug("Updating topology");
             vispCommunicator.setCachedTopologyString(topology);
             vispCommunicator.updateStoredTopology(topology);
 
             // notify other services about topology change
-            if(vispCommunicator.getVispTopology() != null) {
-                poh.topologyUpdate(vispCommunicator.getVispTopology().topology);
-                sds.updateSplitOperatorsFromTopology();
-            } else {
+            try {
+                VispTopology top = vispCommunicator.getVispTopology();
+                if (top != null && top.topology != null && poh != null) {
+                    poh.topologyUpdate(top.topology);
+                    sds.updateSplitOperatorsFromTopology();
+
+                }
+            } catch (EmptyTopologyException e) {
                 LOG.warn("Received empty topology after update");
             }
+
         } else {
             LOG.debug("No topology update necessary");
         }
@@ -93,7 +103,10 @@ public class Scheduler {
      */
     @Scheduled(fixedDelay = 1000)
     public void updateCircuits() {
-        sds.updateCircuits();
-        vispCommunicator.updateMessageFlowAfterCircuitBreakerUpdate();
+        try {
+            sds.updateCircuits();
+            sds.updateMessageFlowAfterCircuitBreakerUpdate();
+        } catch (EmptyTopologyException e) {
+        }
     }
 }
