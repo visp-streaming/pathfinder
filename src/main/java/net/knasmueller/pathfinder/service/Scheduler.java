@@ -86,5 +86,6 @@ public class Scheduler {
     @Scheduled(fixedDelay = 1000)
     public void updateCircuits() {
         sds.updateCircuits();
+        vispCommunicator.updateMessageFlowAfterCircuitBreakerUpdate();
     }
 }

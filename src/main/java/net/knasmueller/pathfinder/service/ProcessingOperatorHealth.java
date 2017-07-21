@@ -213,13 +213,14 @@ public class ProcessingOperatorHealth {
      * Automatically invoked after new up-to-date statistics have been fetched
      */
     public void postStatisticsUpdate() {
+        LOG.info("in postStatisticsUpdate");
         // TODO: parse statistics here, use Nexus to update operator availabilities
 
         // dummy code until that happens:
 
         for(String p : getProcessingOperatorIds()) {
             if(getOperatorStatus(p).equals(PathfinderOperator.Status.WORKING)) {
-                if(ThreadLocalRandom.current().nextInt(0, 5) > 4) {
+                if(ThreadLocalRandom.current().nextInt(0, 5) > 3) {
                     setOperatorStatus(p, "failed");
                 }
             } else {

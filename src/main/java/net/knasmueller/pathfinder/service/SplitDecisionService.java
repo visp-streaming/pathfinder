@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * used by the nexus to update circuit breaker status for all known split operators
@@ -32,7 +33,8 @@ public class SplitDecisionService {
     @Autowired
     private TopologyStabilityRepository tsr;
 
-    @Autowired @Lazy // TODO: rethink design, remove circular dependency
+    @Autowired
+    @Lazy // TODO: rethink design, remove circular dependency
     private VispCommunicator vispCommunicator;
 
     @Autowired
@@ -283,17 +285,26 @@ public class SplitDecisionService {
             if (circuitBreakerMap.get(s).isClosed() && !isPathAvailable(s)) {
                 circuitBreakerMap.get(s).open();
                 LOG.debug("Changed path " + s + "'s circuit breaker to OPEN");
-            } else {
-                if (circuitBreakerMap.get(s).isOpen() && isPathAvailable(s)) {
-                    try {
-                        circuitBreakerMap.get(s).halfOpen();
-                        LOG.debug("Changed path " + s + "'s circuit breaker to HALF_OPEN");
-                    } catch (InvalidCircuitBreakerTransition invalidCircuitBreakerTransition) {
-                        LOG.warn("Could not change circuit breaker state", invalidCircuitBreakerTransition);
-                    }
+            } else if (circuitBreakerMap.get(s).isOpen() && isPathAvailable(s)) {
+                try {
+                    circuitBreakerMap.get(s).halfOpen();
+                    LOG.debug("Changed path " + s + "'s circuit breaker to HALF_OPEN");
+                } catch (InvalidCircuitBreakerTransition invalidCircuitBreakerTransition) {
+                    LOG.warn("Could not change circuit breaker state", invalidCircuitBreakerTransition);
                 }
             }
         }
+
+//        List<String> openCircuits = circuitBreakerMap.keySet().stream()
+//                .filter(element -> circuitBreakerMap.get(element).isOpen())
+//                .collect(Collectors.toList());
+//
+//        List<String> halfOpenCircuits = circuitBreakerMap.keySet().stream()
+//                .filter(element -> circuitBreakerMap.get(element).isHalfOpen())
+//                .collect(Collectors.toList());
+//
+//
+//        openCircuits.forEach(LOG::info);
     }
 
     public int getNumberFailedPaths(String operatorId) {
@@ -308,7 +319,7 @@ public class SplitDecisionService {
             }
 
             return failedPaths;
-        } catch(Exception e) {
+        } catch (Exception e) {
             LOG.error("Failed to get number of failed paths for operator " + operatorId, e);
             return 0;
         }

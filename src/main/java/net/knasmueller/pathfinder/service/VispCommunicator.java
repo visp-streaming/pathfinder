@@ -252,4 +252,10 @@ public class VispCommunicator {
         return affectedSplitOperators;
     }
 
+    /**
+     * This function changes the topology's message flow according to the current circuit breaker statuses
+     */
+    public void updateMessageFlowAfterCircuitBreakerUpdate() {
+        LOG.info("TODO - Implement updating message flow");
+    }
 }
