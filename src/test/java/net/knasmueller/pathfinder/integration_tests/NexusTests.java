@@ -3,6 +3,7 @@ package net.knasmueller.pathfinder.integration_tests;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
 import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
+import net.knasmueller.pathfinder.exceptions.VispRuntimeUnavailableException;
 import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
@@ -45,7 +46,7 @@ public class NexusTests {
     }
 
     @Test
-    public void test_givenSomeStatistics_makeCorrectPredictions() {
+    public void test_givenSomeStatistics_makeCorrectPredictions() throws VispRuntimeUnavailableException {
         OperatorStatisticsResponse r = new OperatorStatisticsResponse();
         r.put("source", SingleOperatorStatistics.fromDefault());
         r.put("step1", SingleOperatorStatistics.fromDefault());

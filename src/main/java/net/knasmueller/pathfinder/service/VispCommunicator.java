@@ -9,13 +9,18 @@ import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
 import net.knasmueller.pathfinder.entities.operator_statistics.SingleOperatorStatistics;
 import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
+import net.knasmueller.pathfinder.exceptions.VispRuntimeUnavailableException;
 import net.knasmueller.pathfinder.repository.SingleOperatorStatisticsRepository;
 import net.knasmueller.pathfinder.repository.VispRuntimeIdentifierRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -42,6 +47,7 @@ public class VispCommunicator {
      * The current VISP topology file as a string
      */
     public String cachedTopologyString = "";
+    private boolean initialized = false;
 
     public String getCachedTopologyString() {
         return cachedTopologyString;
@@ -70,6 +76,8 @@ public class VispCommunicator {
      * @param endpoint
      */
     public synchronized void addVispRuntime(VispRuntimeIdentifier endpoint) {
+        waitForInit();
+
         if (endpoint == null || "".equals(endpoint)) {
             LOG.error("Invalid endpoint");
         } else {
@@ -94,7 +102,19 @@ public class VispCommunicator {
         }
     }
 
+    private void waitForInit() {
+        while (!this.isInitialized()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                LOG.error("Interrupted while waiting for VispCommunicato getting initialized");
+                return;
+            }
+        }
+    }
+
     public synchronized void removeVispRuntime(VispRuntimeIdentifier endpoint) {
+        waitForInit();
         if (endpoint == null || "".equals(endpoint)) {
             LOG.error("Invalid endpoint");
         } else {
@@ -106,6 +126,13 @@ public class VispCommunicator {
 
 
     public List<VispRuntimeIdentifier> getVispRuntimeIdentifiers() {
+        return getVispRuntimeIdentifiers(false);
+    }
+
+    public List<VispRuntimeIdentifier> getVispRuntimeIdentifiers(boolean force) {
+        if (!force) {
+            waitForInit();
+        }
         return vriRepo.findAll();
     }
 
@@ -115,14 +142,48 @@ public class VispCommunicator {
      * @param rt
      * @return
      */
-    public String getTopologyFromVisp(VispRuntimeIdentifier rt) {
+    public String getTopologyFromVisp(VispRuntimeIdentifier rt) throws VispRuntimeUnavailableException {
         RestTemplate restTemplate = new RestTemplate();
         URI targetUrl = UriComponentsBuilder.fromUriString("http://" + rt)
                 .path("/getTopology")
                 .build()
                 .toUri();
-        String topology = restTemplate.getForObject(targetUrl, String.class);
-        return topology;
+        try {
+            String topology = restTemplate.getForObject(targetUrl, String.class);
+            return topology;
+
+        } catch (ResourceAccessException e) {
+            LOG.warn("Could not fetch topology");
+            throw new VispRuntimeUnavailableException("Could not reach VISP runtime at " + rt);
+        }
+    }
+
+    /**
+     * Makes a test invocation and removes runtime if no answer in time arrives
+     *
+     * @param rt
+     */
+    public void pingAndMaybeDeleteRuntime(VispRuntimeIdentifier rt) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            URI targetUrl = UriComponentsBuilder.fromUriString("http://" + rt)
+                    .path("/hello")
+                    .build()
+                    .toUri();
+            restTemplate.setRequestFactory(new SimpleClientHttpRequestFactory());
+            SimpleClientHttpRequestFactory rf = (SimpleClientHttpRequestFactory) restTemplate
+                    .getRequestFactory();
+            rf.setReadTimeout(1000);
+            rf.setConnectTimeout(1000);
+            String result = restTemplate.getForObject(targetUrl, String.class);
+            if (!result.equals("Hello World!")) {
+                throw new Exception();
+            }
+        } catch (Exception e) {
+            LOG.info("Exception: ", e);
+            vriRepo.deleteByIpAndPort(rt.getIp(), rt.getPort());
+        }
+
     }
 
     /**
@@ -276,6 +337,7 @@ public class VispCommunicator {
 
     /**
      * Instructs VISP to stop forwarding messages from parentSplitOperator to op
+     *
      * @param parentSplitOperator
      * @param op
      */
@@ -286,6 +348,7 @@ public class VispCommunicator {
 
     /**
      * Instructs VISP to resume forwarding messages from parentSplitOperator to op
+     *
      * @param parentSplitOperator
      * @param op
      */
@@ -296,11 +359,20 @@ public class VispCommunicator {
 
     /**
      * Instructs VISP to probe whether a normal message flow can be restored
+     *
      * @param parentSplitOperator
      * @param op
      */
     public void probeMessageFlow(String parentSplitOperator, String op) {
         // TODO: implement
         LOG.warn("Not yet implemented: probeMessageFlow(" + parentSplitOperator + ", " + op + ")");
+    }
+
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
     }
 }

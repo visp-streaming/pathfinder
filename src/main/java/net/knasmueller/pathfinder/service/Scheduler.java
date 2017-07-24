@@ -10,6 +10,7 @@ import net.knasmueller.pathfinder.entities.TopologyStability;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
 import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
+import net.knasmueller.pathfinder.exceptions.VispRuntimeUnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,13 @@ public class Scheduler {
         }
         LOG.debug("maybePullTopologyUpdate()");
         // TODO: do not always contact the first one - either random or vote
-        String topology = vispCommunicator.getTopologyFromVisp(vispCommunicator.getVispRuntimeIdentifiers().get(0));
+        String topology = null;
+        VispRuntimeIdentifier rt = vispCommunicator.getVispRuntimeIdentifiers().get(0);
+        try {
+            topology = vispCommunicator.getTopologyFromVisp(rt);
+        } catch (VispRuntimeUnavailableException e) {
+            vispCommunicator.vriRepo.deleteByIpAndPort(rt.getIp(), rt.getPort());
+        }
         if (!vispCommunicator.getCachedTopologyString().equals(topology)) {
             LOG.debug("Updating topology");
             vispCommunicator.setCachedTopologyString(topology);

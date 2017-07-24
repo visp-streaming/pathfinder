@@ -6,6 +6,7 @@ import ac.at.tuwien.infosys.visp.common.operators.Split;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
+import net.knasmueller.pathfinder.exceptions.VispRuntimeUnavailableException;
 import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
@@ -51,7 +52,7 @@ public class SplitJoinIntegrationTests {
     private static final Logger LOG = LoggerFactory.getLogger(SplitJoinIntegrationTests.class);
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws IOException, VispRuntimeUnavailableException {
         doReturn(resourceToString(splitJoinTopology)).when(this.vispCommunicator).getTopologyFromVisp(any());
         List<VispRuntimeIdentifier> runtimes = new ArrayList<>();
         runtimes.add(new VispRuntimeIdentifier("127.0.0.1", 1234));

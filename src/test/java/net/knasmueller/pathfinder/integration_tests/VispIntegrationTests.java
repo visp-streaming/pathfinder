@@ -1,6 +1,7 @@
 package net.knasmueller.pathfinder.integration_tests;
 
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
+import net.knasmueller.pathfinder.exceptions.VispRuntimeUnavailableException;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
 import org.junit.Before;
@@ -35,7 +36,7 @@ public class VispIntegrationTests {
     }
 
     @Test
-    public void test_onlyOneVispRuntime_topologyIsFetched() {
+    public void test_onlyOneVispRuntime_topologyIsFetched() throws VispRuntimeUnavailableException {
         given(this.vispCommunicator.
                 getTopologyFromVisp(new VispRuntimeIdentifier("127.0.0.1:1234"))
         ).willReturn(
@@ -52,7 +53,7 @@ public class VispIntegrationTests {
     }
 
     @Test
-    public void test_threeVispRuntimes_topologyIsFetchedOnlyOnce() {
+    public void test_threeVispRuntimes_topologyIsFetchedOnlyOnce() throws VispRuntimeUnavailableException {
         given(this.vispCommunicator.
                 getTopologyFromVisp(any())
         ).willReturn(

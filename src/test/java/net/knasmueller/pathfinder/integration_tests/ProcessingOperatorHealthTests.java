@@ -3,6 +3,7 @@ package net.knasmueller.pathfinder.integration_tests;
 import net.knasmueller.pathfinder.entities.PathfinderOperator;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
+import net.knasmueller.pathfinder.exceptions.VispRuntimeUnavailableException;
 import net.knasmueller.pathfinder.service.ProcessingOperatorHealth;
 import net.knasmueller.pathfinder.service.Scheduler;
 import net.knasmueller.pathfinder.service.VispCommunicator;
@@ -64,7 +65,7 @@ public class ProcessingOperatorHealthTests {
     List<String> operatorNames;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws IOException, VispRuntimeUnavailableException {
         rbn = new RuleBasedNexus();
         doReturn(resourceToString(splitJoinTopology)).when(this.vispCommunicator).getTopologyFromVisp(any());
         List<VispRuntimeIdentifier> runtimes = new ArrayList<>();
