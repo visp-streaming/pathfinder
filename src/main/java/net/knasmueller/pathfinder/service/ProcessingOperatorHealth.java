@@ -149,7 +149,7 @@ public class ProcessingOperatorHealth {
      * @return first operator's id of the best path
      * @throws NoAlternativePathAvailableException
      */
-    private String getBestAvailablePath(String splitId) throws NoAlternativePathAvailableException {
+    public String getBestAvailablePath(String splitId) throws NoAlternativePathAvailableException {
         Split splitOperator;
         try {
             splitOperator = (Split) vispCommunicator.getVispTopology().getOperator(splitId);

@@ -263,8 +263,7 @@ public class VispCommunicator {
      * @return
      */
     public Map<String, String> getCurrentMessageFlows(List<String> paths) throws EmptyTopologyException {
-        // TODO: actually implement
-        LOG.warn("getCurrentMessageFlows() not yet implemented");
+        // TODO: actually implement getCurrentMessageFlows()
 
         Map<String, String> result = new HashMap<>();
 
@@ -275,7 +274,33 @@ public class VispCommunicator {
         return result;
     }
 
+    /**
+     * Instructs VISP to stop forwarding messages from parentSplitOperator to op
+     * @param parentSplitOperator
+     * @param op
+     */
     public void stopMessageFlow(String parentSplitOperator, String op) {
         LOG.warn("Not yet implemented: stopMessageFlow(" + parentSplitOperator + ", " + op + ")");
+        // TODO: implement
+    }
+
+    /**
+     * Instructs VISP to resume forwarding messages from parentSplitOperator to op
+     * @param parentSplitOperator
+     * @param op
+     */
+    public void resumeMessageFlow(String parentSplitOperator, String op) {
+        LOG.warn("Not yet implemented: resumeMessageFlow(" + parentSplitOperator + ", " + op + ")");
+        // TODO: implement
+    }
+
+    /**
+     * Instructs VISP to probe whether a normal message flow can be restored
+     * @param parentSplitOperator
+     * @param op
+     */
+    public void probeMessageFlow(String parentSplitOperator, String op) {
+        // TODO: implement
+        LOG.warn("Not yet implemented: probeMessageFlow(" + parentSplitOperator + ", " + op + ")");
     }
 }

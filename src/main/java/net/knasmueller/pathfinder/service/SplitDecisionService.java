@@ -3,9 +3,13 @@ package net.knasmueller.pathfinder.service;
 import ac.at.tuwien.infosys.visp.common.operators.Join;
 import ac.at.tuwien.infosys.visp.common.operators.Operator;
 import ac.at.tuwien.infosys.visp.common.operators.Split;
+import net.knasmueller.pathfinder.domain.ICircuitBreakerStatusProvider;
+import net.knasmueller.pathfinder.domain.IDataFlowProvider;
+import net.knasmueller.pathfinder.domain.IMessageFlowSwitcher;
 import net.knasmueller.pathfinder.entities.TopologyStability;
 import net.knasmueller.pathfinder.exceptions.EmptyTopologyException;
 import net.knasmueller.pathfinder.exceptions.InvalidCircuitBreakerTransition;
+import net.knasmueller.pathfinder.exceptions.NoAlternativePathAvailableException;
 import net.knasmueller.pathfinder.exceptions.UnknownOperatorException;
 import net.knasmueller.pathfinder.repository.TopologyStabilityRepository;
 import org.slf4j.Logger;
@@ -346,31 +350,55 @@ public class SplitDecisionService {
     /**
      * This function changes the topology's message flow according to the current circuit breaker statuses
      */
-    public void updateMessageFlowAfterCircuitBreakerUpdate() throws EmptyTopologyException {
-        LOG.info("TODO - Implement updating message flow");
+    public void updateMessageFlowAfterCircuitBreakerUpdate(IDataFlowProvider dataFlowProvider,
+                                                           ICircuitBreakerStatusProvider cbStatusProvider,
+                                                           IMessageFlowSwitcher messageFlowSwitcher)
+            throws EmptyTopologyException {
+        //TODO - Implement updating message flow
 
-        // replace this dummy call once VISP has implemented this on its own
-        List<String> paths = new ArrayList<>();
-        for(String s : getAlternativePaths().keySet()) {
-            for(String o : getAlternativePaths().get(s)) {
-                paths.add(o);
-            }
-        }
-        Map<String, String> currentFlows = vispCommunicator.getCurrentMessageFlows(paths);
+        Map<String, CircuitBreaker> circuitBreakerMap = cbStatusProvider.getCircuitBreakerMap();
+        Map<String, String> currentFlows = dataFlowProvider.getFlows();
 
         // set new flows
         for (String op : circuitBreakerMap.keySet()) {
             CircuitBreaker shouldState = circuitBreakerMap.get(op);
             String isState = currentFlows.get(op);
+            String parentSplit = getParentSplitOperator(op);
 
             if (isState.equals("CLOSED")) {
                 if (shouldState.isOpen()) {
-                    vispCommunicator.stopMessageFlow(getParentSplitOperator(op), op);
+
+                    messageFlowSwitcher.stopMessageFlow(parentSplit, op);
+
+                    // enable alternate path:
+                    try {
+                        messageFlowSwitcher.resumeMessageFlow(parentSplit, poh.getBestAvailablePath(parentSplit));
+                    } catch (NoAlternativePathAvailableException e) {
+                        // TODO: what to do if no alternate paths exist?
+                        LOG.error("No alternative path available");
+                    }
+                }
+                if (shouldState.isHalfOpen()) {
+                    //Invalid transition from CLOSED to HALF_OPEN - skip
                 }
             } else if (isState.equals("HALF_OPEN")) {
+                if (shouldState.isClosed()) {
+                    // normal transition
+                    messageFlowSwitcher.resumeMessageFlow(getParentSplitOperator(op), op);
+                }
+                if (shouldState.isOpen()) {
+                    // also valid if probing failed
+                    messageFlowSwitcher.stopMessageFlow(getParentSplitOperator(op), op);
+                }
 
             } else if (isState.equals("OPEN")) {
-                // TODO: continue here
+                if (shouldState.isClosed()) {
+                    //Irregular transition from OPEN to CLOSED - skip
+                }
+                if (shouldState.isHalfOpen()) {
+                    // normal transition
+                    messageFlowSwitcher.probeMessageFlow(getParentSplitOperator(op), op);
+                }
             }
         }
 
@@ -382,13 +410,13 @@ public class SplitDecisionService {
      * @param op
      * @return
      */
-    private String getParentSplitOperator(String op) throws EmptyTopologyException {
+    public String getParentSplitOperator(String op) throws EmptyTopologyException {
         Queue<String> queue = new LinkedList<>();
         queue.add(op);
         while (!queue.isEmpty()) {
             String currentOpId = queue.poll();
             Operator currentOp = vispCommunicator.getVispTopology().topology.get(currentOpId);
-            if(currentOp instanceof Split) {
+            if (currentOp instanceof Split) {
                 return currentOpId;
             }
             for (Operator s : currentOp.getSources()) {
@@ -396,5 +424,9 @@ public class SplitDecisionService {
             }
         }
         throw new RuntimeException("Could not find suitable operator");
+    }
+
+    public Map<String, CircuitBreaker> getCircuitBreakerMap() {
+        return circuitBreakerMap;
     }
 }

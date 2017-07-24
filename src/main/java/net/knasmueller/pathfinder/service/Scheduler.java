@@ -1,5 +1,11 @@
 package net.knasmueller.pathfinder.service;
 
+import net.knasmueller.pathfinder.domain.ICircuitBreakerStatusProvider;
+import net.knasmueller.pathfinder.domain.IDataFlowProvider;
+import net.knasmueller.pathfinder.domain.IMessageFlowSwitcher;
+import net.knasmueller.pathfinder.domain.impl.CircuitBreakerStatusProvider;
+import net.knasmueller.pathfinder.domain.impl.DataFlowProvider;
+import net.knasmueller.pathfinder.domain.impl.VispMessageFlowSwitcher;
 import net.knasmueller.pathfinder.entities.TopologyStability;
 import net.knasmueller.pathfinder.entities.VispRuntimeIdentifier;
 import net.knasmueller.pathfinder.entities.operator_statistics.OperatorStatisticsResponse;
@@ -11,7 +17,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Scheduling component that automates several tasks
@@ -105,7 +113,23 @@ public class Scheduler {
     public void updateCircuits() {
         try {
             sds.updateCircuits();
-            sds.updateMessageFlowAfterCircuitBreakerUpdate();
+
+            if (sds.getCircuitBreakerMap() == null) {
+                return;
+            }
+            // replace this dummy call once VISP has implemented this on its own
+            List<String> paths = new ArrayList<>();
+            for (String s : sds.getAlternativePaths().keySet()) {
+                for (String o : sds.getAlternativePaths().get(s)) {
+                    paths.add(o);
+                }
+            }
+            Map<String, String> currentFlows = vispCommunicator.getCurrentMessageFlows(paths);
+
+            IDataFlowProvider dataFlowProvider = new DataFlowProvider(currentFlows);
+            ICircuitBreakerStatusProvider circuitBreakerStatusProvider = new CircuitBreakerStatusProvider(sds);
+            IMessageFlowSwitcher messageFlowSwitcher = new VispMessageFlowSwitcher(vispCommunicator);
+            sds.updateMessageFlowAfterCircuitBreakerUpdate(dataFlowProvider, circuitBreakerStatusProvider, messageFlowSwitcher);
         } catch (EmptyTopologyException e) {
         }
     }
