@@ -33,6 +33,27 @@ public class DeploymentController {
             openstackConnector.startInstance(name);
         }
 
+        int maxAttempts = 20;
+        boolean success = false;
+        for(int i=0; i < maxAttempts; i++) {
+            String lastAddress = openstackConnector.getIpByName("bernhard_node" + nodes.size());
+            if(lastAddress == null) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    // until openstack is done
+                }
+            } else {
+                success = true;
+                LOG.info("Successfully determined IP of last instance after " + i + " second(s)");
+                break;
+            }
+        }
+
+        if(!success) {
+            LOG.warn("Could not determine IP of last instance");
+        }
+
         result.put("done", true);
 
         return result;
