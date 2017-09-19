@@ -167,7 +167,7 @@ public class VispCommunicator {
         try {
             RestTemplate restTemplate = new RestTemplate();
             URI targetUrl = UriComponentsBuilder.fromUriString("http://" + rt)
-                    .path("/hello")
+                    .path("/checkStatus")
                     .build()
                     .toUri();
             restTemplate.setRequestFactory(new SimpleClientHttpRequestFactory());
@@ -175,9 +175,9 @@ public class VispCommunicator {
                     .getRequestFactory();
             rf.setReadTimeout(1000);
             rf.setConnectTimeout(1000);
-            String result = restTemplate.getForObject(targetUrl, String.class);
-            if (!result.equals("Hello World!")) {
-                throw new Exception();
+            HashMap<String, String> result = restTemplate.getForObject(targetUrl, HashMap.class);
+            if (!result.containsKey("onlineStatus")) {
+                throw new Exception("Could not reach instance's checkStatus method");
             }
         } catch (Exception e) {
             LOG.info("Exception: ", e);
