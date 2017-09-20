@@ -39,8 +39,7 @@ public class OperatorStatisticsResponseTests {
         Assert.assertTrue(r.size() == 1);
         Assert.assertTrue(r.get("step1").getOperatorName().equals("step1"));
 
-        Assert.assertFalse(r.get("step1").isKilled_process());
-        Assert.assertTrue(r.get("step1").getRam_now() > 0.3);
+        Assert.assertTrue(r.get("step1").getActualMemory() > 100.0);
     }
 
 }

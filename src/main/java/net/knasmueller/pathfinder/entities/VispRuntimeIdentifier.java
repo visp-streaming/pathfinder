@@ -28,9 +28,18 @@ public class VispRuntimeIdentifier {
     }
 
     public VispRuntimeIdentifier(String endpoint) {
+        if(endpoint.contains("//")) {
+            String[] splitted = endpoint.split("//");
+            endpoint = splitted[1];
+        }
+
         String[] splitted = endpoint.split(":");
         this.ip = splitted[0];
         this.port = Integer.parseInt(splitted[1]);
+
+        if(this.ip.toLowerCase().equals("localhost")) {
+            this.ip = "127.0.0.1";
+        }
     }
 
     @Override

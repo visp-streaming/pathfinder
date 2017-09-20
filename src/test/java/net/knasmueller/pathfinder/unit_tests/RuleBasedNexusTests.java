@@ -19,30 +19,19 @@ public class RuleBasedNexusTests {
     }
 
     @Test
-    public void test_killedProcess_isFailed() {
-        SingleOperatorStatistics statistics = SingleOperatorStatistics.fromDefault();
-        statistics.setKilled_process(true);
-        assert(ruleBasedNexus.predict(statistics).equals(INexus.OperatorClassification.FAILED));
-    }
-
-    @Test
     public void test_lowSourceConsumption_isFailed() {
         SingleOperatorStatistics statistics = SingleOperatorStatistics.fromDefault();
-        statistics.setRate_source_consumption_now(0.0);
-        statistics.setRate_source_consumption_10(0.0);
-        statistics.setRate_source_consumption_20(0.0);
+        statistics.setIncomingRate(0.0);
+        statistics.setItemsWaiting(150);
+        statistics.setDeliveryRate(0.0);
         assert(ruleBasedNexus.predict(statistics).equals(INexus.OperatorClassification.FAILED));
     }
 
     @Test
     public void test_lowCpuLowRam_isFailed() {
         SingleOperatorStatistics statistics = SingleOperatorStatistics.fromDefault();
-        statistics.setCpu_now(0.0);
-        statistics.setCpu_10(0.005);
-        statistics.setCpu_20(0.01);
-        statistics.setRam_now(0.2);
-        statistics.setRam_10(0.205);
-        statistics.setRam_20(0.109);
+        statistics.setActualMemory(0);
+        statistics.setActualCpuCores(0.0);
         assert(ruleBasedNexus.predict(statistics).equals(INexus.OperatorClassification.FAILED));
     }
 

@@ -103,7 +103,8 @@ public class ProcessingOperatorHealthTests {
         }
 
         // kill step2a
-        unavailableStatistics.get("step2a").setKilled_process(true);
+        unavailableStatistics.get("step2a").setActualCpuCores(0.0);
+        unavailableStatistics.get("step2a").setActualMemory(0);
 
         doReturn(unavailableStatistics).when(this.vispCommunicator).getStatisticsFromVisp(any());
 
@@ -124,14 +125,16 @@ public class ProcessingOperatorHealthTests {
         }
 
         // kill step2a
-        unavailableStatistics.get("step2a").setKilled_process(true);
+        unavailableStatistics.get("step2a").setActualCpuCores(0.0);
+        unavailableStatistics.get("step2a").setActualMemory(0);
 
         doReturn(unavailableStatistics).when(this.vispCommunicator).getStatisticsFromVisp(any());
 
         Assert.assertTrue(rbn.predict(statistics.get("step2a")).equals(INexus.OperatorClassification.FAILED));
 
         // restart step2a
-        unavailableStatistics.get("step2a").setKilled_process(false);
+        unavailableStatistics.get("step2a").setActualCpuCores(1.0);
+        unavailableStatistics.get("step2a").setActualMemory(300);
 
         doReturn(unavailableStatistics).when(this.vispCommunicator).getStatisticsFromVisp(any());
 

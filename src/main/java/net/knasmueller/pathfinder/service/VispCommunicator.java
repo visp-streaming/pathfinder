@@ -210,11 +210,13 @@ public class VispCommunicator {
     public OperatorStatisticsResponse getStatisticsFromVisp(VispRuntimeIdentifier rt) {
         RestTemplate restTemplate = new RestTemplate();
         URI targetUrl = UriComponentsBuilder.fromUriString("http://" + rt)
-                .path("/getAllStatistics") // TODO: do not query the whole statistics but only the subset for the that runtime
+                .path("/pathfinder/getAllStatistics") // TODO: do not query the whole statistics but only the subset for the that runtime
                 .build()
                 .toUri();
         OperatorStatisticsResponse allStatistics;
-        allStatistics = restTemplate.getForObject(targetUrl, OperatorStatisticsResponse.class);
+        HashMap<String, HashMap<String, Object>> result;
+        result = restTemplate.getForObject(targetUrl, HashMap.class);
+        allStatistics = new OperatorStatisticsResponse(result);
         LOG.debug("For step1:");
         LOG.debug(allStatistics.get("step1").toString());
 

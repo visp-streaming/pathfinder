@@ -13,26 +13,19 @@ import org.springframework.stereotype.Service;
 public class RuleBasedNexus implements INexus {
     @Override
     public OperatorClassification predict(SingleOperatorStatistics s) {
-        if(s.isKilled_process()) {
-            return OperatorClassification.FAILED;
-        }
-        double maxSourceConsumption = Double.max(Double.max(s.getRate_source_consumption_now(),
-                s.getRate_source_consumption_10()), s.getRate_source_consumption_20());
-        if(maxSourceConsumption < 0.1) {
+        if(s.getItemsWaiting() > 20 && s.getActualCpuCores() < 0.1) {
             return OperatorClassification.FAILED;
         }
 
-        double maxRam = max3(s.getRam_now(), s.getRam_10(), s.getRam_20());
-        double maxCpu = max3(s.getCpu_now(), s.getCpu_10(), s.getCpu_20());
+        if(s.getActualMemory() < 50 && s.getActualCpuCores() < 0.1) {
+            return OperatorClassification.FAILED;
+        }
 
-        if(maxRam < 0.25 && maxCpu < 0.1) {
+        if(s.getItemsWaiting() > 100 && s.getDeliveryRate() < 0.5) {
             return OperatorClassification.FAILED;
         }
 
         return OperatorClassification.WORKING;
     }
 
-    private double max3(double a, double b, double c) {
-        return Double.max(Double.max(a, b), c);
-    }
 }
